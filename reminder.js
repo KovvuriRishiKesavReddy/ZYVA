@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadReminders() {
         remindersList.innerHTML = '<p class="text-gray-500 text-center py-8">Loading your reminders...</p>';
         try {
-            const response = await fetch(`${API_BASE_URL}/api/reminder/user`, {
+            const response = await fetch(`${API_BASE_URL}/api/reminders/user`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/reminder/user`, {
+            const response = await fetch(`${API_BASE_URL}/api/reminders/user`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const reminderId = deleteBtn.dataset.id;
             if (confirm('Are you sure you want to delete this reminder?')) {
                 try {
-                    const response = await fetch(`${API_BASE_URL}/api/reminder/user/${reminderId}`, {
+                    const response = await fetch(`${API_BASE_URL}/api/reminders/user/${reminderId}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });

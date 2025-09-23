@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const API_BASE_URL = 'https://zyva-healthcare-utus.onrender.com';
+    const API_BASE_URL = 'https://zyva-healthcare-utus.onrender.com/api';
 
     const form = document.getElementById('reminder-form');
     const frequencySelect = document.getElementById('frequency');

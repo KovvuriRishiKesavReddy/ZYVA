@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_BASE_URL = 'http://localhost:3000'; // Replace with your actual API base URL
+    const API_BASE_URL = 'https://zyva-healthcare-osrq.onrender.com'; // Replace with your actual API base URL
     const policiesContainer = document.getElementById('policies-container');
     const loadingIndicator = document.getElementById('loading-indicator');
     const emptyState = document.getElementById('empty-state');

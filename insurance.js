@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_BASE_URL = 'http://localhost:3000'; // In case we switch to a real API
+    const API_BASE_URL = 'https://zyva-healthcare-osrq.onrender.com'; // In case we switch to a real API
 
     const insurancePlansData = [
         {

@@ -390,7 +390,7 @@
             if (!ensureLoggedIn()) return;
             try {
                 const token = getAuthToken();
-                const res = await fetch('http://localhost:3000/api/appointments/user', {
+                const res = await fetch('https://zyva-healthcare-utus.onrender.com/api/appointments/user', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.status === 401 || res.status === 403) { window.location.href = 'login_page.html'; return; }

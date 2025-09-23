@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // For production, use relative URLs or environment-specific URLs
-        return 'https://zyva-healthcare-utus.onrender.com';
+        return window.location.origin;
     };
 
     const SERVER_URL = getServerURL();

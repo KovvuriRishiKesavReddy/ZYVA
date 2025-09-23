@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Check for login status
     const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    console.log('Token retrieved:', token); // Add this line
+    console.log('Token type:', typeof token);
     if (!token) {
         // Redirect to login if not authenticated
         window.location.href = 'login_page.html';

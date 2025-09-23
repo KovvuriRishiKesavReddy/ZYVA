@@ -154,6 +154,7 @@ const authenticateToken = async (req, res, next) => {
                 error: 'Access token required' 
             });
         }
+        next()
 
         // Handle dummy token for testing
         if (token === 'dummy-token-for-testing') {

@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Configuration
-    const API_BASE_URL = 'https://zyva-healthcare-utus.onrender.com';
+    const API_BASE_URL = 'https://zyva-healthcare-osrq.onrender.com';
 
     // DOM Elements
     const uploadForm = document.getElementById('upload-form');

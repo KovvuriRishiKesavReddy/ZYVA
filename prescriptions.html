@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ZYVA - Prescriptions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%); min-height: 100vh; background-attachment: fixed; display: flex; flex-direction: column; }
+        .card-gradient { background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%); }
+        
+        footer {
+            margin-top: auto;
+            background: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
+            color: white;
+        }
+        .nav-link.active {
+            background: linear-gradient(to right, rgba(30, 136, 229, 0.1), rgba(66, 165, 245, 0.2));
+            border-bottom: 3px solid #1976D2;
+            font-weight: 600;
+        }
+    </style>
+    <!-- Optional: keep styles.css if you rely on it elsewhere -->
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+    </head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-white bg-opacity-90 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <img src="logo.jpg" alt="ZYVA Logo" class="h-8 w-auto" />
+                    <span class="ml-2 text-xl font-semibold text-gray-800">ZYVA</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="home_page.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Home</a>
+                    <a href="medicine.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Medicines</a>
+                    <div class="relative group">
+                        <a href="doctor.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Doctors</a>
+                        <!-- Dropdown commented out -->
+                    </div>
+                    <a href="scans.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Scans</a>
+                    <a href="orders.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Orders</a>
+                    <a href="appointments.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Appointments</a>
+                    <a href="reminder.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Reminders</a>
+                    <div class="relative group">
+                        <a href="#" class="nav-link active px-3 py-2 rounded-md text-sm font-medium text-gray-800">My Health</a>
+                        <div class="hidden absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 w-56 z-50 group-hover:block">
+                            <a href="prescriptions.html" class="block px-4 py-2 text-sm text-blue-600 bg-blue-50">Prescriptions</a>
+                            <a href="symptom_checker.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Symptom Checker</a>
+                            <a href="blood_analysis.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Blood Analysis</a>
+                            <a href="sugar.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Blood Sugar Analysis</a>
+                        </div>
+                    </div>
+                    <a href="insurance.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Insurance</a>
+                    <div class="relative">
+                        <div id="userMenuButton" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold cursor-pointer select-none" style="display: none;"></div>
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 w-56 z-50">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <div id="menuName" class="text-sm font-semibold text-gray-800">Guest</div>
+                                <div id="menuEmail" class="text-xs text-gray-500 truncate">guest@example.com</div>
+                            </div>
+                            <div class="py-1">
+                                <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+                                <a href="my_insurance.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Insurance</a>
+                                <button id="logout-btn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Log out</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+        <div class="card-gradient rounded-lg shadow-xl p-6 mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">My Prescriptions</h1>
+
+            <div id="alert-container" class="mb-4"></div>
+
+            <form id="upload-form" class="mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="prescription-file" class="block text-sm font-medium text-gray-700">Prescription File (PDF, JPG, PNG)</label>
+                        <input type="file" id="prescription-file" name="prescriptionFile" required 
+                            class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                    </div>
+                    <div>
+                        <label for="custom-filename" class="block text-sm font-medium text-gray-700">
+                            Custom Filename (Optional)
+                            <span class="text-xs text-gray-500 ml-1">- Leave empty to keep original name</span>
+                        </label>
+                        <input type="text" id="custom-filename" name="customFileName" 
+                            placeholder="e.g., 'Blood Test Results Dec 2024'" 
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                        <p class="mt-1 text-xs text-gray-500">File extension will be added automatically</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label for="prescription-description" class="block text-sm font-medium text-gray-700">Description (Optional)</label>
+                    <textarea id="prescription-description" name="description" rows="2" 
+                            placeholder="e.g., 'Follow-up with Dr. Smith' or 'Lab results from City Hospital'"
+                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                </div>
+                <div class="mt-6 flex justify-center">
+                    <button type="submit" id="upload-btn" 
+                            class="inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <span id="upload-text">Upload</span>
+                        <div id="upload-loader" class="hidden ml-2 w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </button>
+                </div>
+            </form>
+
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Uploaded Documents</h2>
+            <div id="prescription-list-loader" class="text-center py-4">
+                <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p class="mt-2 text-gray-600">Loading prescriptions...</p>
+            </div>
+            <div id="prescription-list-container" class="bg-white rounded-lg shadow-md overflow-hidden">
+                <!-- Prescriptions will be dynamically inserted here -->
+            </div>
+            <p id="no-prescriptions-message" class="hidden text-center text-gray-500 py-8">You have not uploaded any prescriptions yet.</p>
+        </div>
+    </div>
+
+    <footer class="py-6 flex-grow bottom-0 left-0 w-full"> <div class="text-center text-sm">© 2025 ZYVA Healthcare. All rights reserved to ZYVA.</div> </footer>
+    <script src="auth.js"></script>
+    <script src="prescriptions.js"></script>
+</body>
+</html>
+</html>
+
+
+

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZYVA - Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%);
+        min-height: 100vh;
+        background-attachment: fixed;
+      }
+      footer {
+            margin-top: auto;
+            background: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
+            color: white;
+        }
+    </style>
+    <nav class="bg-white/90 backdrop-blur shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center">
+                <img src="logo.jpg" class="h-8 w-auto" alt="Logo">
+                <span class="ml-2 text-xl font-semibold text-gray-800">ZYVA</span>
+            </div>
+            <a href="home_page.html" class="text-sm text-blue-600 hover:text-blue-700">← Back to Home</a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-6">
+        <div class="bg-white rounded-2xl shadow-xl p-6">
+            <div class="flex items-center gap-4 border-b pb-4 mb-6">
+                <div id="avatar" class="h-14 w-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xl">U</div>
+                <div>
+                    <div id="name" class="text-xl font-semibold text-gray-800">User</div>
+                    <div id="email" class="text-sm text-gray-500">email@example.com</div>
+                </div>
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div class="p-4 rounded-lg bg-blue-50">
+                    <div class="text-xs text-gray-500">Phone</div>
+                    <div id="phone" class="text-gray-800 font-medium">—</div>
+                </div>
+                <div class="p-4 rounded-lg bg-blue-50">
+                    <div class="text-xs text-gray-500">Emergency Contact</div>
+                    <div id="emergency" class="text-gray-800 font-medium">—</div>
+                </div>
+                <div class="p-4 rounded-lg bg-blue-50">
+                    <div class="text-xs text-gray-500">Gender</div>
+                    <div id="gender" class="text-gray-800 font-medium">—</div>
+                </div>
+                <div class="p-4 rounded-lg bg-blue-50">
+                    <div class="text-xs text-gray-500">Date of Birth</div>
+                    <div id="dob" class="text-gray-800 font-medium">—</div>
+                </div>
+                <div class="p-4 rounded-lg bg-blue-50">
+                    <div class="text-xs text-gray-500">Blood Group</div>
+                    <div id="blood" class="text-gray-800 font-medium">—</div>
+                </div>
+                <div class="p-4 rounded-lg bg-blue-50 sm:col-span-2">
+                    <div class="text-xs text-gray-500">Address</div>
+                    <div id="address" class="text-gray-800 font-medium">—</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-6 flex-grow bottom-0 left-0 w-full"> <div class="text-center text-sm">© 2025 ZYVA Healthcare. All rights reserved to ZYVA.</div> </footer>
+
+    <script>window.API_BASE_URL = window.API_BASE_URL || 'http://localhost:3000/api';</script>
+    <script>
+    (function(){
+        // Get authentication data
+        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        const userDataString = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+        
+        // More flexible authentication check
+        if (!token) {
+            console.log('No auth token found, redirecting to login');
+            window.location.href = 'login_page.html';
+            return;
+        }
+
+        let user = {};
+        try {
+            user = userDataString ? JSON.parse(userDataString) : {};
+        } catch (e) {
+            console.error('Error parsing user data:', e);
+            user = {};
+        }
+
+        // Debug logging
+        console.log('Auth check - Token exists:', !!token);
+        console.log('Auth check - User data:', user);
+
+        const setText = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val && String(val).trim() ? val : '—';
+        };
+
+        const populateUI = (userData) => {
+            // Handle avatar initials
+            let initials = 'U';
+            if (userData.firstName || userData.lastName) {
+                initials = (userData.firstName?.[0] || '') + (userData.lastName?.[0] || '');
+            } else if (userData.name) {
+                const nameParts = userData.name.trim().split(/\s+/);
+                initials = nameParts[0]?.[0] || 'U';
+                if (nameParts.length > 1) {
+                    initials += nameParts[nameParts.length - 1]?.[0] || '';
+                }
+            } else if (userData.email) {
+                initials = userData.email[0] || 'U';
+            }
+            
+            document.getElementById('avatar').textContent = initials.toUpperCase();
+            
+            // Handle name display
+            let displayName = 'User';
+            if (userData.firstName || userData.lastName) {
+                displayName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
+            } else if (userData.name) {
+                displayName = userData.name;
+            }
+            
+            setText('name', displayName);
+            setText('email', userData.email);
+            setText('phone', userData.phoneNumber || userData.phone);
+            setText('emergency', userData.emergencyContact);
+            setText('gender', userData.gender);
+            setText('dob', userData.dateOfBirth ? new Date(userData.dateOfBirth).toLocaleDateString() : '—');
+            setText('blood', userData.bloodGroup);
+            setText('address', userData.address);
+        };
+
+        // Populate with local data first for responsiveness
+        populateUI(user);
+
+        // Only fetch fresh data if we have a user ID
+        if (user.id) {
+            fetch(`http://localhost:3000/api/user/by-id/${user.id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(res => {
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        console.log('Auth failed on server, redirecting to login');
+                        localStorage.clear();
+                        sessionStorage.clear();
+                        window.location.href = 'login_page.html';
+                        return;
+                    }
+                    throw new Error(`HTTP ${res.status}: Failed to fetch updated profile`);
+                }
+                return res.json();
+            }).then(data => {
+                if (data && data.success && data.user) {
+                    populateUI(data.user);
+                    // Update localStorage with fresh data
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                } else {
+                    console.warn('Unexpected server response:', data);
+                }
+            }).catch(error => {
+                console.error('Profile refresh failed:', error);
+                // Don't redirect on fetch failure - just log it
+                // The user can still see their cached profile data
+            });
+        } else {
+            console.warn('No user ID found - using cached profile data only');
+            // This is okay - user can still see their basic profile info
+        }
+    })();
+    </script>
+</body>
+</html>

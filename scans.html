@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ZYVA - Scans</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%);
+            min-height: 100vh;
+            background-attachment: fixed;
+        }
+
+        .card-gradient {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+        }
+        footer {
+            margin-top: auto;
+            background: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
+            color: white;
+        }
+        .scan-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(66, 165, 245, 0.5);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(to right, rgba(30, 136, 229, 0.1), rgba(66, 165, 245, 0.2));
+            border-bottom: 3px solid #1976D2;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-white bg-opacity-90 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <img src="logo.jpg" alt="ZYVA Logo" class="h-8 w-auto" />
+                    <span class="ml-2 text-xl font-semibold text-gray-800">ZYVA</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="home_page.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Home</a>
+                    <a href="medicine.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Medicines</a>
+                    <div class="relative group">
+                        <a href="doctor.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Doctors</a>
+                        <!-- Dropdown commented out -->
+                    </div>
+                    <a href="scans.html" class="nav-link active px-3 py-2 rounded-md text-sm font-medium text-gray-800">Scans</a>
+                    <a href="orders.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Orders</a>
+                    <a href="appointments.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Appointments</a>
+                    <a href="reminder.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Reminders</a>
+                    <div class="relative group">
+                        <a href="#" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">My Health</a>
+                        <div class="hidden absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 w-56 z-50 group-hover:block">
+                            <a href="prescriptions.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Prescriptions</a>
+                            <a href="symptom_checker.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Symptom Checker</a>
+                            <a href="blood_analysis.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Blood Analysis</a>
+                            <a href="sugar.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Blood Sugar Analysis</a>
+                        </div>
+                    </div>
+                    <a href="insurance.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Insurance</a>
+                    <div class="relative">
+                        <div id="userMenuButton" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold cursor-pointer select-none" style="display: none;"></div>
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 w-56 z-50">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <div id="menuName" class="text-sm font-semibold text-gray-800">Guest</div>
+                                <div id="menuEmail" class="text-xs text-gray-500 truncate">guest@example.com</div>
+                            </div>
+                            <div class="py-1">
+                                <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+                                <a href="my_insurance.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Insurance</a>
+                                <button id="logout-btn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Log out</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Scan Search & Filter -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+        <div class="card-gradient rounded-lg shadow-xl p-6 mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Scan Finder</h1>
+
+            <div class="relative mb-6">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <input
+                    type="text"
+                    class="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg bg-white bg-opacity-80 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm sm:text-sm"
+                    placeholder="Search scans, types or categories"
+                />
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <button class="p-1 rounded-full hover:bg-gray-100" aria-label="Search button">
+                        <svg class="h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-4 mb-6 filter-buttons">
+                <button class="px-4 py-2 rounded-full bg-white text-gray-800 text-sm font-medium hover:bg-yellow-100 active">All Scans</button>
+                <button class="px-4 py-2 rounded-full bg-white text-gray-800 text-sm font-medium hover:bg-yellow-100">X-Ray</button>
+                <button class="px-4 py-2 rounded-full bg-white text-gray-800 text-sm font-medium hover:bg-yellow-100">MRI</button>
+                <button class="px-4 py-2 rounded-full bg-white text-gray-800 text-sm font-medium hover:bg-yellow-100">Ultrasound</button>
+                <button class="px-4 py-2 rounded-full bg-white text-gray-800 text-sm font-medium hover:bg-yellow-100">Blood Test</button>
+            </div>
+        </div>
+
+        <!-- Scan List -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 scan-list-container">
+            <!-- Scan cards will be dynamically inserted here by JavaScript -->
+        </div>
+
+        <!-- Shopping Cart Summary -->
+        <div class="fixed bottom-4 right-4">
+            <button id="cart-button" class="flex items-center justify-center p-4 rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700 transition-all duration-300 transform hover:scale-110" aria-label="Open cart">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span id="cart-count" class="ml-1 font-medium">0 Items</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-modal="true" role="dialog" aria-labelledby="cart-modal-title">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            <div class="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6 mx-4 transform transition-all">
+                <div class="flex justify-between items-center pb-3 border-b border-gray-200">
+                    <h3 id="cart-modal-title" class="text-2xl font-bold text-gray-800">Your Cart</h3>
+                    <button id="close-cart-btn" class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Close cart">&times;</button>
+                </div>
+                <div id="cart-items-container" class="py-4">
+                    <!-- Cart items will be rendered here -->
+                </div>
+                <div class="border-t border-gray-200 pt-3 flex justify-between items-center">
+                    <span class="text-xl font-bold text-gray-800">Total: <span id="cart-total">₹0.00</span></span>
+                    <button id="checkout-btn" class="px-4 py-2 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 transition duration-300">Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-6 flex-grow bottom-0 left-0 w-full">
+        <div class="text-center text-sm">© 2025 ZYVA Healthcare. All rights reserved to ZYVA.</div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="scan.js"></script>
+</body>
+</html>

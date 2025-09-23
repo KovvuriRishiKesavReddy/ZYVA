@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZYVA - Complete Payment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%);
+      min-height: 100vh;
+      background-attachment: fixed;
+    }
+    .card-gradient {
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+      backdrop-filter: blur(10px);
+    }
+    footer {
+      margin-top: auto;
+      background: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
+      color: white;
+    }
+    .payment-method-card {
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    .payment-method-card:hover {
+      border-color: #3B82F6;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+    }
+    .payment-method-card.selected {
+      border-color: #3B82F6;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 197, 253, 0.1));
+      transform: translateY(-2px);
+    }
+    .appointment-summary {
+      background: linear-gradient(135deg, #EBF8FF, #DBEAFE);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    .amount-card {
+      background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-slide-up {
+      animation: slideInUp 0.5s ease-out;
+    }
+    .payment-form-section {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    .payment-form-section.active {
+      max-height: 500px;
+    }
+    .secure-badge {
+      background: linear-gradient(135deg, #10B981, #059669);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 w-full z-50 bg-white bg-opacity-90 shadow-md backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <div class="flex items-center">
+          <img src="logo.jpg" alt="ZYVA Logo" class="h-8 w-auto" />
+          <span class="ml-2 text-xl font-semibold text-gray-800">ZYVA</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="appoint_doctor.html" class="px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Booking
+          </a>
+          <a href="appointments.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-blue-600 transition-colors">My Appointments</a>
+          <div class="relative">
+            <div id="userMenuButton" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold cursor-pointer select-none" style="display: none;"></div>
+            <div id="userMenu" class="hidden absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 w-56 z-50">
+                <div class="px-4 py-3 border-b border-gray-100">
+                    <div id="menuName" class="text-sm font-semibold text-gray-800">Guest</div>
+                    <div id="menuEmail" class="text-xs text-gray-500 truncate">guest@example.com</div>
+                </div>
+                <div class="py-1">
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+                    <a href="my_insurance.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Insurance</a>
+                    <button id="logout-btn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Log out</button>
+                </div>
+            </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="min-h-screen px-4 pt-24 pb-10">
+    <div class="max-w-5xl mx-auto">
+      
+      <!-- Page Header -->
+      <div class="text-center mb-8 animate-slide-up">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Complete Your Payment</h1>
+        <p class="text-gray-600">Secure payment for your doctor consultation</p>
+        <div class="flex items-center justify-center mt-3">
+          <div class="secure-badge px-3 py-1 rounded-full text-sm font-medium flex items-center">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+            SSL Secured Payment
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Column - Payment Form -->
+        <div class="lg:col-span-2">
+          
+          <!-- Appointment Summary -->
+          <div class="appointment-summary rounded-xl p-6 mb-8 shadow-lg animate-slide-up">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Appointment Summary
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p class="text-sm text-gray-600 mb-1">Doctor</p>
+                <p id="doctor-name" class="font-bold text-lg text-gray-800">Loading...</p>
+                <p id="doctor-spec" class="text-blue-600 font-medium">Loading...</p>
+              </div>
+              
+              <div>
+                <p class="text-sm text-gray-600 mb-1">Appointment Details</p>
+                <p id="appointment-date" class="font-semibold text-gray-800">Loading...</p>
+                <p id="appointment-time" class="text-gray-600">Loading...</p>
+              </div>
+              
+              <div>
+                <p class="text-sm text-gray-600 mb-1">Location</p>
+                <p id="doctor-location" class="text-gray-800">Loading...</p>
+              </div>
+              
+              <div>
+                <p class="text-sm text-gray-600 mb-1">Appointment ID</p>
+                <p id="appointment-id" class="font-mono text-gray-800">Loading...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Methods -->
+          <div class="card-gradient rounded-xl shadow-lg p-6 mb-6 animate-slide-up">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+              </svg>
+              Choose Payment Method
+            </h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div class="payment-method-card bg-white rounded-lg p-4 cursor-pointer" data-method="card">
+                <div class="flex items-center">
+                  <input type="radio" name="paymentMethod" value="card" class="form-radio text-blue-600 mr-3" checked />
+                  <div>
+                    <p class="font-semibold text-gray-800">Credit/Debit Card</p>
+                    <p class="text-sm text-gray-500">Visa, MasterCard, Rupay</p>
+                  </div>
+                  <div class="ml-auto">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="payment-method-card bg-white rounded-lg p-4 cursor-pointer" data-method="upi">
+                <div class="flex items-center">
+                  <input type="radio" name="paymentMethod" value="upi" class="form-radio text-blue-600 mr-3" />
+                  <div>
+                    <p class="font-semibold text-gray-800">UPI Payment</p>
+                    <p class="text-sm text-gray-500">Google Pay, PhonePe, Paytm</p>
+                  </div>
+                  <div class="ml-auto">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="payment-method-card bg-white rounded-lg p-4 cursor-pointer" data-method="netbanking">
+                <div class="flex items-center">
+                  <input type="radio" name="paymentMethod" value="netbanking" class="form-radio text-blue-600 mr-3" />
+                  <div>
+                    <p class="font-semibold text-gray-800">Net Banking</p>
+                    <p class="text-sm text-gray-500">All major banks supported</p>
+                  </div>
+                  <div class="ml-auto">
+                    <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="payment-method-card bg-white rounded-lg p-4 cursor-pointer" data-method="wallet">
+                <div class="flex items-center">
+                  <input type="radio" name="paymentMethod" value="wallet" class="form-radio text-blue-600 mr-3" />
+                  <div>
+                    <p class="font-semibold text-gray-800">Digital Wallet</p>
+                    <p class="text-sm text-gray-500">Paytm, Amazon Pay, etc.</p>
+                  </div>
+                  <div class="ml-auto">
+                    <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Form Sections -->
+            <form id="payment-form">
+              <!-- Personal Details -->
+              <div class="mb-6">
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Personal Information</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                    <input type="text" id="user-name" class="w-full border-2 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" required />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                    <input type="email" id="user-email" class="w-full border-2 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" required placeholder="you@example.com" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                    <input type="tel" id="user-phone" class="w-full border-2 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" required placeholder="+91 12345 67890" />
+                  </div>
+                  
+                </div>
+              </div>
+
+              <!-- Card Details -->
+              <div id="card-details" class="payment-form-section active mb-6">
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Card Details</h4>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Card Number *</label>
+                    <input type="text" id="card-number" maxlength="19" placeholder="1234 5678 9012 3456" class="w-full border-2 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" />
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date *</label>
+                      <input type="text" id="card-expiry" maxlength="5" placeholder="MM/YY" class="w-full border-2 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">CVV *</label>
+                      <input type="password" id="card-cvv" maxlength="4" placeholder="123" class="w-full border-2 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" />
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Cardholder Name *</label>
+                    <input type="text" id="card-name" placeholder="Name as on card" class="w-full border-2 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- UPI Details -->
+              <div id="upi-details" class="payment-form-section mb-6">
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">UPI Details</h4>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">UPI ID *</label>
+                  <input type="text" id="upi-id" placeholder="example@paytm" class="w-full border-2 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" />
+                </div>
+              </div>
+
+              <!-- Net Banking Details -->
+              <div id="netbanking-details" class="payment-form-section mb-6">
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Select Your Bank</h4>
+                <select id="bank-select" class="w-full border-2 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                  <option value="">Choose your bank</option>
+                  <option value="sbi">State Bank of India</option>
+                  <option value="hdfc">HDFC Bank</option>
+                  <option value="icici">ICICI Bank</option>
+                  <option value="axis">Axis Bank</option>
+                  <option value="pnb">Punjab National Bank</option>
+                  <option value="other">Other Banks</option>
+                </select>
+              </div>
+
+              <!-- Wallet Details -->
+              <div id="wallet-details" class="payment-form-section mb-6">
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Select Wallet</h4>
+                <div class="grid grid-cols-2 gap-4">
+                  <label class="flex items-center p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-blue-500">
+                    <input type="radio" name="wallet-type" value="paytm" class="form-radio text-blue-600 mr-3" />
+                    <span>Paytm</span>
+                  </label>
+                  <label class="flex items-center p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-blue-500">
+                    <input type="radio" name="wallet-type" value="amazonpay" class="form-radio text-blue-600 mr-3" />
+                    <span>Amazon Pay</span>
+                  </label>
+                </div>
+              </div>
+
+              <button type="submit" id="pay-now-btn" class="w-full bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-4 px-6 rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                Pay Now - <span id="pay-amount">₹0</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right Column - Payment Summary -->
+        <div class="lg:col-span-1">
+          <div class="amount-card rounded-xl shadow-lg p-6 sticky top-28 animate-slide-up">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+              </svg>
+              Payment Summary
+            </h3>
+            
+            <div class="space-y-4 mb-6">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600">Consultation Fee</span>
+                <span id="consultation-fee" class="font-semibold text-gray-800">₹0</span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600">Platform Fee</span>
+                <span class="font-semibold text-gray-800">₹50</span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600">GST (18%)</span>
+                <span id="gst-amount" class="font-semibold text-gray-800">₹0</span>
+              </div>
+              
+              <hr class="border-gray-300">
+              
+              <div class="flex justify-between items-center text-lg">
+                <span class="font-bold text-gray-800">Total Amount</span>
+                <span id="total-amount" class="font-bold text-green-600">₹0</span>
+              </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-start">
+                <svg class="w-5 h-5 text-blue-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                  <p class="text-blue-800 font-medium text-sm">Money Back Guarantee</p>
+                  <p class="text-blue-600 text-xs mt-1">100% refund if you cancel 24 hours before appointment</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="success-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 text-center transform transition-all">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h2>
+      <p class="text-gray-600 mb-6">Your appointment has been confirmed. You will receive a confirmation email shortly.</p>
+      
+      <div class="text-center mb-6">
+        <p class="text-sm text-gray-500">Appointment ID</p>
+        <p id="success-appointment-id" class="font-mono font-bold text-lg text-gray-800"></p>
+      </div>
+      
+      <div class="flex items-center justify-center mb-4">
+        <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mr-3"></div>
+        <span class="text-gray-600">Redirecting to appointments...</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Auth helpers and prefill
+      function getAuthToken() { return localStorage.getItem('authToken') || sessionStorage.getItem('authToken'); }
+      function getCurrentUser() { const u = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser'); return u ? JSON.parse(u) : null; }
+      function ensureLoggedIn() { const t = getAuthToken(); const u = getCurrentUser(); if (!t || !u) { alert('Please log in to continue to payment.'); window.location.href = 'login_page.html'; return false; } return true; }
+      function prefillUserInfo() {
+        const user = getCurrentUser(); if (!user) return;
+        const nameInput = document.getElementById('user-name');
+        const emailInput = document.getElementById('user-email');
+        const phoneInput = document.getElementById('user-phone');
+        const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.name || '';
+        if (nameInput && !nameInput.value) nameInput.value = fullName;
+        if (emailInput && !emailInput.value) emailInput.value = user.email || '';
+        if (phoneInput && !phoneInput.value) phoneInput.value = user.phoneNumber || '';
+      }
+      if (!ensureLoggedIn()) return;
+
+      // Get pending appointment from localStorage
+      const pendingAppointment = JSON.parse(localStorage.getItem('pendingAppointment') || 'null');
+      
+      if (!pendingAppointment) {
+        alert('No appointment found. Redirecting to doctors page...');
+        window.location.href = 'doctor.html';
+        return;
+      }
+
+      let selectedPaymentMethod = 'card';
+
+      // Initialize page
+      init();
+
+      function init() {
+        displayAppointmentInfo();
+        calculateAmounts();
+        setupPaymentMethods();
+        setupFormValidation();
+        setupEventListeners();
+        prefillUserInfo();
+      }
+
+      function displayAppointmentInfo() {
+        document.getElementById('doctor-name').textContent = pendingAppointment.doctorName;
+        document.getElementById('doctor-spec').textContent = pendingAppointment.doctorSpec;
+        document.getElementById('doctor-location').textContent = pendingAppointment.doctorLocation || 'Hyderabad';
+        document.getElementById('appointment-date').textContent = formatDate(pendingAppointment.date);
+        document.getElementById('appointment-time').textContent = pendingAppointment.timeLabel;
+        document.getElementById('appointment-id').textContent = pendingAppointment.appointmentId;
+      }
+
+      function calculateAmounts() {
+        const consultationFee = parseInt(pendingAppointment.doctorFee.replace('₹', ''));
+        const platformFee = 50;
+        const subtotal = consultationFee + platformFee;
+        const gstAmount = Math.round(subtotal * 0.18);
+        const totalAmount = subtotal + gstAmount;
+
+        document.getElementById('consultation-fee').textContent = `₹${consultationFee}`;
+        document.getElementById('gst-amount').textContent = `₹${gstAmount}`;
+        document.getElementById('total-amount').textContent = `₹${totalAmount}`;
+        document.getElementById('pay-amount').textContent = `₹${totalAmount}`;
+
+        // Store total amount for later use
+        window.totalPayableAmount = totalAmount;
+      }
+
+      function setupPaymentMethods() {
+        const paymentCards = document.querySelectorAll('.payment-method-card');
+        const paymentInputs = document.querySelectorAll('input[name="paymentMethod"]');
+        
+        paymentCards.forEach((card, index) => {
+          card.addEventListener('click', () => {
+            // Remove selected class from all cards
+            paymentCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selected class to clicked card
+            card.classList.add('selected');
+            
+            // Check the corresponding radio button
+            const method = card.dataset.method;
+            document.querySelector(`input[value="${method}"]`).checked = true;
+            
+            selectedPaymentMethod = method;
+            showPaymentForm(method);
+          });
+        });
+
+        paymentInputs.forEach(input => {
+          input.addEventListener('change', (e) => {
+            selectedPaymentMethod = e.target.value;
+            showPaymentForm(e.target.value);
+          });
+        });
+
+        // Initialize with card method
+        document.querySelector('.payment-method-card[data-method="card"]').classList.add('selected');
+      }
+
+      function showPaymentForm(method) {
+        // Hide all payment form sections
+        document.querySelectorAll('.payment-form-section').forEach(section => {
+          section.classList.remove('active');
+        });
+
+        // Show the selected payment form section
+        const sectionId = `${method}-details`;
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.classList.add('active');
+        }
+      }
+
+      function setupFormValidation() {
+        // Card number formatting
+        const cardNumberInput = document.getElementById('card-number');
+        cardNumberInput.addEventListener('input', (e) => {
+          let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+          let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+          e.target.value = formattedValue;
+        });
+
+        // Expiry date formatting
+        const expiryInput = document.getElementById('card-expiry');
+        expiryInput.addEventListener('input', (e) => {
+          let value = e.target.value.replace(/\D/g, '');
+          if (value.length >= 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+          }
+          e.target.value = value;
+        });
+
+        // CVV validation
+        const cvvInput = document.getElementById('card-cvv');
+        cvvInput.addEventListener('input', (e) => {
+          e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+
+        // Phone number formatting
+        const phoneInput = document.getElementById('user-phone');
+        phoneInput.addEventListener('input', (e) => {
+          let value = e.target.value.replace(/[^0-9+]/g, '');
+          e.target.value = value;
+        });
+      }
+
+      function setupEventListeners() {
+        // Form submission
+        document.getElementById('payment-form').addEventListener('submit', handlePayment);
+      }
+
+      function handlePayment(e) {
+        e.preventDefault();
+        if (!ensureLoggedIn()) return;
+
+        if (!validateForm()) {
+          return;
+        }
+
+        // Show processing state
+        const payBtn = document.getElementById('pay-now-btn');
+        const originalContent = payBtn.innerHTML;
+        
+        payBtn.disabled = true;
+        payBtn.innerHTML = `
+          <svg class="w-5 h-5 inline mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Processing Payment...
+        `;
+
+        // Simulate payment processing
+        setTimeout(() => {
+          processPaymentSuccess();
+        }, 2000);
+      }
+
+      function validateForm() {
+        const name = document.getElementById('user-name').value.trim();
+        const email = document.getElementById('user-email').value.trim();
+        const phone = document.getElementById('user-phone').value.trim();
+
+        if (!name || !email || !phone) {
+          showNotification('Please fill in all required personal information fields.', 'error');
+          return false;
+        }
+
+        if (!isValidEmail(email)) {
+          showNotification('Please enter a valid email address.', 'error');
+          return false;
+        }
+
+        if (selectedPaymentMethod === 'card') {
+          const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
+          const cardExpiry = document.getElementById('card-expiry').value;
+          const cardCvv = document.getElementById('card-cvv').value;
+          const cardName = document.getElementById('card-name').value.trim();
+
+          if (!cardNumber || cardNumber.length < 13 || !cardExpiry || !cardCvv || !cardName) {
+            showNotification('Please fill in all card details.', 'error');
+            return false;
+          }
+        } else if (selectedPaymentMethod === 'upi') {
+          const upiId = document.getElementById('upi-id').value.trim();
+          if (!upiId || !upiId.includes('@')) {
+            showNotification('Please enter a valid UPI ID.', 'error');
+            return false;
+          }
+        } else if (selectedPaymentMethod === 'netbanking') {
+          const bankSelect = document.getElementById('bank-select').value;
+          if (!bankSelect) {
+            showNotification('Please select your bank.', 'error');
+            return false;
+          }
+        }
+
+        return true;
+      }
+
+      // No longer saving doctor appointments to localStorage; backend is the source of truth
+      function saveDoctorAppointment() { return; }
+
+      async function updateAppointmentStatus(appointmentId, status) {
+        try {
+          const token = getAuthToken();
+          if (!token || !appointmentId) return;
+          await fetch(`http://localhost:3000/api/appointments/${encodeURIComponent(appointmentId)}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ status })
+          });
+        } catch (err) { console.warn('Failed to update appointment status:', err); }
+      }
+
+      // FIXED: Replace the processPaymentSuccess function in pay_doctor.html with this corrected version
+
+async function processPaymentSuccess() {
+    try {
+        const appointmentId = pendingAppointment.appointmentId;
+        const transactionId = `TXN${Date.now()}${Math.floor(Math.random() * 10000)}`;
+        const paymentMethod = selectedPaymentMethod;
+
+        console.log('Confirming payment for appointment:', appointmentId);
+        console.log('Transaction ID:', transactionId);
+        console.log('Payment method:', paymentMethod);
+
+        // Call the payment confirmation endpoint
+        const token = getAuthToken();
+        if (!token) {
+            throw new Error('Authentication token not found');
+        }
+
+        const response = await fetch(`http://localhost:3000/api/appointments/${encodeURIComponent(appointmentId)}/confirm-payment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                transactionId: transactionId,
+                paymentMethod: paymentMethod
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Payment confirmation failed');
+        }
+
+        const result = await response.json();
+        console.log('Payment confirmation successful:', result);
+
+        // Create appointment data for UI feedback
+        const appointmentData = {
+            ...pendingAppointment,
+            status: 'confirmed',
+            paymentStatus: 'completed',
+            paymentMethod: paymentMethod,
+            transactionId: transactionId,
+            totalAmount: window.totalPayableAmount,
+            patientName: document.getElementById('user-name').value,
+            patientEmail: document.getElementById('user-email').value,
+            patientPhone: document.getElementById('user-phone').value,
+            paymentDate: new Date().toISOString()
+        };
+
+        // Clean up temporary data
+        localStorage.removeItem('pendingAppointment');
+        localStorage.removeItem('selectedDoctor');
+
+        // Show success modal
+        showSuccessModal(appointmentData);
+
+    } catch (error) {
+        console.error('Payment confirmation error:', error);
+        
+        // Reset payment button
+        const payBtn = document.getElementById('pay-now-btn');
+        payBtn.disabled = false;
+        payBtn.innerHTML = `
+            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+            Pay Now - <span id="pay-amount">₹${window.totalPayableAmount}</span>
+        `;
+        
+        showNotification('Payment confirmation failed: ' + error.message, 'error');
+    }
+}
+
+      function showSuccessModal(appointmentData) {
+        document.getElementById('success-appointment-id').textContent = appointmentData.appointmentId;
+        document.getElementById('success-modal').classList.remove('hidden');
+
+        // Redirect after 4 seconds
+        setTimeout(() => {
+          window.location.href = 'appointments.html';
+        }, 4000);
+      }
+
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        const options = { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        };
+        return date.toLocaleDateString('en-US', options);
+      }
+
+      function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+
+      function showNotification(message, type = 'info') {
+        // Remove existing notification
+        const existing = document.querySelector('.notification');
+        if (existing) existing.remove();
+
+        const notification = document.createElement('div');
+        notification.className = `notification fixed top-20 right-4 px-6 py-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 ${
+          type === 'success' ? 'bg-green-500 text-white' : 
+          type === 'error' ? 'bg-red-500 text-white' : 
+          'bg-blue-500 text-white'
+        }`;
+        
+        notification.innerHTML = `
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              ${type === 'success' ? 
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>' :
+                type === 'error' ?
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>' :
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
+              }
+            </svg>
+            <span>${message}</span>
+          </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto remove
+        setTimeout(() => {
+          notification.style.transform = 'translateX(100%)';
+          notification.style.opacity = '0';
+          setTimeout(() => notification.remove(), 300);
+        }, 5000);
+      }
+    });
+  </script>
+  <script src="auth.js"></script>
+  <footer class="py-6 flex-grow bottom-0 left-0 w-full"> <div class="text-center text-sm">© 2025 ZYVA Healthcare. All rights reserved to ZYVA.</div> </footer>
+</body>
+</html>

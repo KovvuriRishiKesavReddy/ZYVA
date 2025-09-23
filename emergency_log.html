@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Emergency Quick-Help</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --card:#111827cc;
+      --muted:#94a3b8;
+      --text:#e5e7eb;
+      --accent:#22d3ee;
+      --ok:#34d399;
+      --warn:#f59e0b;
+      --danger:#fb7185;
+      --radius:18px;
+    }
+
+    html,body{height:100%; margin:0;}
+    body{
+      background: radial-gradient(1200px 600px at 15% 10%, #1e293b 0, transparent 60%),
+                  radial-gradient(900px 500px at 85% 100%, #0b1324 0, transparent 60%),
+                  var(--bg);
+      color:var(--text); font: 400 15px/1.4 system-ui;
+      display:grid; place-items:center; overflow:hidden;
+    }
+
+    .frame{ 
+      width:min(1100px, 96vw); height:min(680px, 96vh);
+      background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius: calc(var(--radius) + 10px);
+      box-shadow: 0 20px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+      display:grid; grid-template-rows: auto 1fr auto; padding:14px; gap:10px;
+      backdrop-filter: blur(6px);
+    }
+
+    header{
+      display:flex; align-items:center; justify-content:space-between; padding:10px 14px;
+      background: rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+    }
+    .brand{display:flex; align-items:center; gap:12px;}
+    .logo{ width:42px; height:42px; display:grid; place-items:center; border-radius:12px;
+      background: conic-gradient(from 210deg, var(--accent), #60a5fa, #a78bfa, var(--accent));
+      color:#06131a; font-weight:800; }
+    h1{ margin:0; font-size:clamp(18px, 2.2vw, 24px);}
+    .sub{ color:var(--muted); font-size:clamp(12px, 1.3vw, 14px)}
+
+    .grid{display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; height:100%;}
+
+    .card{ border-radius: var(--radius); padding:14px;
+      display:grid; grid-template-rows:auto 1fr; gap:6px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25); cursor:pointer;
+    }
+    .card.common{background:rgba(52,211,153,0.1); border:1px solid var(--ok);}
+    .card.firstaid{background:rgba(245,158,11,0.1); border:1px solid var(--warn);}
+    .card.life{background:rgba(251,113,133,0.1); border:1px solid var(--danger);}
+    .card.summer{background:rgba(34,211,238,0.1); border:1px solid var(--accent);}
+    .card.breath{background:rgba(167,139,250,0.1); border:1px solid #a78bfa;}
+
+    .title{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:16px;}
+    .pill{ font-size:11px; padding:2px 7px; border-radius:999px; border:1px solid rgba(255,255,255,0.12); color:var(--muted)}
+    .steps{ margin:0; padding-left:18px; display:grid; gap:4px; font-size:13px; color:#cbd5e1;}
+
+    footer{ display:flex; justify-content:space-between; padding:6px 14px; color:var(--muted); font-size:12px;}
+
+    /* Popup */
+    .popup{
+      position:fixed; inset:0; background:rgba(0,0,0,0.6);
+      display:none; align-items:center; justify-content:center;
+    }
+    .popup.active{display:flex;}
+    .popup-box{
+      background:#1e293b; padding:22px; border-radius:20px; width: min(420px, 90%);
+      box-shadow:0 12px 50px rgba(0,0,0,0.6); animation:zoomIn 0.25s ease;
+    }
+    .popup h2{margin-top:0; color:#38bdf8; font-size:20px; text-align:center;}
+    .popup h3{margin:12px 0 6px; font-size:15px; color:#f1f5f9;}
+    .popup ul{margin:0; padding-left:18px; font-size:14px; color:#cbd5e1; display:grid; gap:4px;}
+    .close-btn{
+      margin-top:16px; display:block; padding:10px 18px;
+      background:var(--accent); border:none; border-radius:12px;
+      font-weight:700; cursor:pointer; margin-left:auto; margin-right:auto;
+    }
+    @keyframes zoomIn{
+      from{transform:scale(0.8); opacity:0;}
+      to{transform:scale(1); opacity:1;}
+    }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <header>
+      <div class="brand">
+        <div class="logo"><img src="logo.jpg" alt="logo" width="42px" height="42px"></div>
+        <div>
+          <h1>Emergency Quick-Help</h1>
+          <div class="sub">Quick steps before hospital visit — not a substitute for medical care.For consultation, please login to our website <a href="login_page.html" >ZYVA</a>.</div>
+        </div>
+      </div>
+      <div class="emergency-buttons">
+        <div class="emergency-btn ambulance">🚑 108</div>
+        <div class="emergency-btn emergency">🚨 911</div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="card common" data-issue="fever"><div class="title">🌡️ Fever <span class="pill">Common</span></div><ul class="steps"><li>Drink water</li><li>Take rest</li><li>Light meals</li><li>Cool compress</li></ul></article>
+      <article class="card common" data-issue="cough"><div class="title">🤧 Cough <span class="pill">Common</span></div><ul class="steps"><li>Warm fluids</li><li>Steam inhale</li><li>Ginger tea</li><li>Honey water</li></ul></article>
+      <article class="card summer" data-issue="dehydration"><div class="title">🥵 Dehydration <span class="pill">Summer</span></div><ul class="steps"><li>ORS/sip water</li><li>Move to shade</li><li>Cool body</li><li>Rest</li></ul></article>
+
+      <article class="card firstaid" data-issue="cuts"><div class="title">🩹 Cuts & Bleeding  <span class="pill">First Aid</span></div><ul class="steps"><li>Apply pressure</li><li>Rinse clean</li><li>Cover wound</li><li>Rest affected</li></ul></article>
+      <article class="card firstaid" data-issue="burns"><div class="title">🔥 Burns <span class="pill">First Aid</span></div><ul class="steps"><li>Cool water</li><li>Remove tight items</li><li>Cover loose cloth</li><li>Don’t pop blisters</li></ul></article>
+      <article class="card firstaid" data-issue="cpr"><div class="title">❤️ CPR <span class="pill">First Aid</span></div><ul class="steps"><li>Check response</li><li>Call help</li><li>30 chest compressions</li><li>2 rescue breaths</li></ul></article>
+
+      <article class="card life" data-issue="choking"><div class="title">🫁 Choking <span class="pill">Life</span></div><ul class="steps"><li>Back blows</li><li>Heimlich thrusts</li><li>Call 108 immediately if severe.</li><li>Repeat if needed</li></ul></article>
+      <article class="card breath" data-issue="asthma"><div class="title">😮‍💨 Asthma <span class="pill">Breathing</span></div><ul class="steps"><li>Use inhaler</li><li>Sit upright</li><li>Stay calm</li><li>Call 108 immediately if severe.</li></ul></article>
+      <article class="card common" data-issue="stomach"><div class="title">🤢 Stomach Pain <span class="pill">Common</span></div><ul class="steps"><li>Drink warm water</li><li>Light diet</li><li>Rest</li><li>Apply heat pad</li></ul></article>
+    </section>
+
+    <footer>⚠️ General Info Only — Consult the Nearest Hospital Immediately if Severe.</footer>
+  </main>
+
+  <!-- Popup -->
+  <div class="popup" id="popup">
+    <div class="popup-box">
+      <h2 id="popup-title"></h2>
+      <h3>Home Remedies</h3>
+      <ul id="popup-remedies"></ul>
+      <h3>Suggested Medicines</h3>
+      <ul id="popup-meds"></ul>
+      <button class="close-btn" onclick="closePopup()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const data = {
+      fever:{
+        remedies:["Drink warm fluids","Cool compress","Rest in ventilated room","Light diet"],
+        meds:["Paracetamol","ORS (if weak)","Vitamin C supplements"]
+      },
+      cough:{
+        remedies:["Ginger tea","Honey water","Turmeric milk","Steam inhalation"],
+        meds:["Cough syrup (dextromethorphan)","Throat lozenges","Paracetamol if fever"]
+      },
+      dehydration:{
+        remedies:["ORS or sugar-salt water","Coconut water","Buttermilk","Fruits with water (melon)"],
+        meds:["ORS sachets","Electrolyte drinks","Zinc supplements"]
+      },
+      cuts:{
+        remedies:["Apply turmeric","Aloe vera gel","Keep clean","Cover lightly"],
+        meds:["Antiseptic cream","Paracetamol for pain","Bandage"]
+      },
+      burns:{
+        remedies:["Cool water wash","Apply aloe vera","Use honey for healing","Keep uncovered if small"],
+        meds:["Silver sulfadiazine cream","Paracetamol","Antibiotic ointment (minor)"]
+      },
+      cpr:{
+        remedies:["Ensure safety","Flat surface","Call ambulance","Do compressions"],
+        meds:["None — immediate CPR is priority"]
+      },
+      choking:{
+        remedies:["Back blows","Abdominal thrusts","Call emergency","Repeat till clear"],
+        meds:["No medicine — emergency action needed"]
+      },
+      asthma:{
+        remedies:["Sit upright","Steam inhalation","Breathing exercise","Stay calm"],
+        meds:["Salbutamol inhaler","Montelukast","Theophylline (as prescribed)"]
+      },
+      stomach:{
+        remedies:["Drink warm water","Ginger tea","Cumin seeds water","Rest"],
+        meds:["ORS if vomiting","Paracetamol for pain","Antacid tablets"]
+      }
+    };
+
+    const popup=document.getElementById("popup");
+    const title=document.getElementById("popup-title");
+    const remedies=document.getElementById("popup-remedies");
+    const meds=document.getElementById("popup-meds");
+
+    document.querySelectorAll(".card").forEach(card=>{
+      card.addEventListener("click",()=>{
+        let issue=card.dataset.issue;
+        let info=data[issue];
+        title.textContent=card.querySelector(".title").textContent;
+        remedies.innerHTML=info.remedies.map(r=>`<li>${r}</li>`).join("");
+        meds.innerHTML=info.meds.map(m=>`<li>${m}</li>`).join("");
+        popup.classList.add("active");
+      });
+    });
+
+    function closePopup(){popup.classList.remove("active");}
+  </script>
+</body>
+</html>

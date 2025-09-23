@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ZYVA - My Insurance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%);
+            min-height: 100vh;
+            background-attachment: fixed;
+        }
+        .card-gradient {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+        }
+        .policy-card {
+            transition: all 0.3s ease;
+        }
+        .policy-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .nav-link.active {
+            background: linear-gradient(to right, rgba(30, 136, 229, 0.1), rgba(66, 165, 245, 0.2));
+            border-bottom: 3px solid #1976D2;
+            font-weight: 600;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .auth-warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            border: 1px solid #f59e0b;
+            color: #92400e;
+        }
+        footer {
+            margin-top: auto;
+            background: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-white bg-opacity-90 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <img src="logo.jpg" alt="ZYVA Logo" class="h-8 w-auto" />
+                    <span class="ml-2 text-xl font-semibold text-gray-800">ZYVA</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="home_page.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Home</a>
+                    <a href="medicine.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Medicines</a>
+                    <a href="doctor.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Doctors</a>
+                    <a href="scans.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Scans</a>
+                    <a href="orders.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Orders</a>
+                    <a href="appointments.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Appointments</a>
+                    <a href="reminder.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Reminders</a>
+                    <div class="relative group">
+                        <a href="#" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">My Health</a>
+                        <div class="hidden absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 w-56 z-50 group-hover:block">
+                            <a href="prescriptions.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Prescriptions</a>
+                            <a href="symptom_checker.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Symptom Checker</a>
+                            <a href="blood_analysis.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Blood Analysis</a>
+                            <a href="sugar.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Blood Sugar Analysis</a>
+                        </div>
+                    </div>
+                    <a href="insurance.html" class="px-3 py-2 text-sm font-medium text-gray-800 hover:text-yellow-700">Insurance</a>
+                    <div class="relative">
+                        <div id="userMenuButton" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold cursor-pointer select-none" style="display: none;"></div>
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 w-56 z-50">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <div id="menuName" class="text-sm font-semibold text-gray-800">Guest</div>
+                                <div id="menuEmail" class="text-xs text-gray-500 truncate">guest@example.com</div>
+                            </div>
+                            <div class="py-1">
+                                <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+                                <a href="my_insurance.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Insurance</a>
+                                <button id="logout-btn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Log out</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Policies Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+        <div class="card-gradient rounded-lg shadow-xl p-6 mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">My Insurance Policies</h1>
+            
+            <!-- Auth Warning -->
+            <div id="auth-warning" class="auth-warning rounded-lg p-4 mb-6" style="display: none;">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    <div>
+                        <h3 class="font-semibold">Please log in to view your policies</h3>
+                        <p class="text-sm">You need to be logged in to access your purchased insurance policies.</p>
+                        <a href="login_page.html" class="inline-block mt-2 px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">Go to Login</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="text-center py-8" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p class="text-gray-500 mt-4">Loading your policies...</p>
+            </div>
+
+            <!-- Policies Container -->
+            <div id="policies-container" class="space-y-6">
+                <!-- Policies will be dynamically inserted here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="text-center py-12" style="display: none;">
+                <svg class="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">No Insurance Policies Found</h3>
+                <p class="text-gray-500 mb-6">You haven't purchased any insurance policies yet.</p>
+                <a href="insurance.html" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    Browse Insurance Plans
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-6 flex-grow bottom-0 left-0 w-full"> <div class="text-center text-sm">© 2025 ZYVA Healthcare. All rights reserved to ZYVA.</div> </footer>
+    <script src="my_insurance.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

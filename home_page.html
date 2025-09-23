@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZYVA - Your Healthcare Partner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="home_page.css">
+    <style>
+        footer {
+            margin-top: auto;
+            background: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
+            color: white;
+        }
+        /* Analysis Carousel Styles */
+        .analysis-carousel-container {
+            overflow: hidden;
+        }
+        .analysis-carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .analysis-card-wrapper {
+            flex-shrink: 0;
+            width: 100%;
+        }
+        @media (min-width: 640px) {
+            .analysis-card-wrapper {
+                width: 50%;
+            }
+        }
+        @media (min-width: 1024px) {
+            .analysis-card-wrapper {
+                width: 33.3333%;
+            }
+        }
+        .analysis-card {
+            display: block;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .analysis-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .analysis-card-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            font-size: 2rem;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-white bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <div class="h-8 w-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <img src="logo.jpg" alt="ZYVA Logo">
+                    </div>
+                    <span class="ml-2 text-xl font-semibold text-gray-800">ZYVA</span>
+                </div>
+                
+                <div class="flex-1 max-w-xl mx-4 nav-search">
+                    <div class="search-container">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input 
+                                id="universal-search" 
+                                type="text" 
+                                class="block w-full pl-12 pr-4 py-2 text-gray-800 border border-gray-300 rounded-xl bg-white bg-opacity-90 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm" 
+                                placeholder="Search Medicines, Doctors, Scans..."
+                                autocomplete="off"
+                            >
+                            <div id="search-dropdown" class="search-dropdown"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <button class="mobile-search-btn p-2 text-gray-600">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <a href="orders.html" class="nav-link px-3 py-2 text-sm font-medium text-gray-800 hover:text-blue-600">
+                        <i class="fas fa-shopping-cart mr-1"></i> Orders
+                    </a>
+                    <a href="appointments.html" class="nav-link px-3 py-2 text-sm font-medium text-gray-800 hover:text-blue-600">
+                        <i class="fas fa-calendar-check mr-1"></i> Appointments
+                    </a>
+                    <a href="reminder.html" class="nav-link px-3 py-2 text-sm font-medium text-gray-800 hover:text-blue-600">
+                        <i class="fas fa-bell mr-1"></i> Reminders
+                    </a>
+                    <!-- User Avatar + Dropdown (Standardized) -->
+                    <div class="relative">
+                        <div id="userMenuButton" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold cursor-pointer select-none" style="display: none;">
+                            <!-- Initials inserted via JS -->
+                        </div>
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 w-56 z-50">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <div id="menuName" class="text-sm font-semibold text-gray-800">Guest</div>
+                                <div id="menuEmail" class="text-xs text-gray-500 truncate">guest@example.com</div>
+                            </div>
+                            <div class="py-1">
+                                <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+                                <a href="my_insurance.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Insurance</a>
+                                <button id="logout-btn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Log out</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Search -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+        <!-- Hero Carousel -->
+        <div class="hero-carousel shadow-xl mb-8">
+            <div class="carousel-slide active" style="background: linear-gradient(rgba(25, 118, 210, 0.7), rgba(66, 165, 245, 0.7)), url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 1200 600&quot;><rect fill=&quot;%23E3F2FD&quot; width=&quot;1200&quot; height=&quot;600&quot;/><path fill=&quot;%23BBDEFB&quot; d=&quot;M0 300h1200v300H0z&quot;/><circle fill=&quot;%231976D2&quot; cx=&quot;300&quot; cy=&quot;200&quot; r=&quot;50&quot; opacity=&quot;0.3&quot;/><circle fill=&quot;%2342A5F5&quot; cx=&quot;900&quot; cy=&quot;150&quot; r=&quot;30&quot; opacity=&quot;0.3&quot;/></svg>');">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <h1>Welcome to ZYVA</h1>
+                    <p>Your comprehensive healthcare partner providing world-class medical services</p>
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button onclick="scrollToServices()" class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-6 py-3 rounded-full font-semibold text-md hover:from-yellow-500 hover:to-yellow-700 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                            Explore Services
+                        </button>
+                        <a href="scans.html" class="bg-white/90 text-blue-700 px-6 py-3 rounded-full font-semibold text-md hover:bg-white transform hover:scale-105 transition-all duration-300 shadow-lg">
+                            Book Appointment
+                        </a>
+                    </div>
+                    <div class="mt-4 inline-flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-xs">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Trust Us We Take Care of Your Health</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="carousel-slide" style="background: linear-gradient(rgba(56, 178, 172, 0.7), rgba(72, 187, 120, 0.7)), url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 1200 600&quot;><rect fill=&quot;%23f0fff4&quot; width=&quot;1200&quot; height=&quot;600&quot;/><path fill=&quot;%23c6f6d5&quot; d=&quot;M0 400h1200v200H0z&quot;/><circle fill=&quot;%2338b2ac&quot; cx=&quot;200&quot; cy=&quot;180&quot; r=&quot;40&quot; opacity=&quot;0.3&quot;/><circle fill=&quot;%234fd1c7&quot; cx=&quot;1000&quot; cy=&quot;250&quot; r=&quot;60&quot; opacity=&quot;0.3&quot;/></svg>');">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <h1>Find Expert Doctors</h1>
+                    <p>Connect with qualified specialists and book appointments instantly</p>
+                    <a href="doctor.html" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full font-semibold text-md hover:from-green-500 hover:to-green-700 transform hover:scale-105 transition-all duration-300 shadow-lg inline-block">
+                        Find Doctors
+                    </a>
+                </div>
+            </div>
+            
+            <div class="carousel-slide" style="background: linear-gradient(rgba(102, 126, 234, 0.7), rgba(118, 75, 162, 0.7)), url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 1200 600&quot;><rect fill=&quot;%23f7fafc&quot; width=&quot;1200&quot; height=&quot;600&quot;/><path fill=&quot;%23edf2f7&quot; d=&quot;M0 350h1200v250H0z&quot;/><circle fill=&quot;%23667eea&quot; cx=&quot;400&quot; cy=&quot;180&quot; r=&quot;45&quot; opacity=&quot;0.3&quot;/><circle fill=&quot;%23764ba2&quot; cx=&quot;800&quot; cy=&quot;220&quot; r=&quot;35&quot; opacity=&quot;0.3&quot;/></svg>');">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <h1>24/7 Emergency Care</h1>
+                    <p>Round-the-clock emergency services with rapid response and expert care</p>
+                    <a href="emergency.html" class="bg-gradient-to-r from-red-400 to-red-600 text-white px-6 py-3 rounded-full font-semibold text-md hover:from-red-500 hover:to-red-700 transform hover:scale-105 transition-all duration-300 shadow-lg inline-block">
+                        🚨 Emergency
+                    </a>
+                </div>
+            </div>
+            
+            <div class="carousel-nav">
+                <div class="nav-dot active" onclick="currentSlide(1)"></div>
+                <div class="nav-dot" onclick="currentSlide(2)"></div>
+                <div class="nav-dot" onclick="currentSlide(3)"></div>
+            </div>
+        </div>
+
+        <!-- Quick Services -->
+        <div class="card-gradient rounded-xl shadow-xl p-6 mb-8" id="services">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Quick Access Services</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <a href="medicine.html" class="service-card rounded-xl p-4 text-center hover:shadow-lg transition-all duration-300">
+                    <div class="feature-icon">💊</div>
+                    <h3 class="text-md font-semibold text-gray-800 mb-2">Medicines</h3>
+                    <p class="text-gray-600 text-sm">Order prescriptions online</p>
+                </a>
+                
+                <a href="doctor.html" class="service-card rounded-xl p-4 text-center hover:shadow-lg transition-all duration-300">
+                    <div class="feature-icon">👨‍⚕️</div>
+                    <h3 class="text-md font-semibold text-gray-800 mb-2">Find Doctors</h3>
+                    <p class="text-gray-600 text-sm">Book with specialists</p>
+                </a>
+                
+                <a href="scans.html" class="service-card rounded-xl p-4 text-center hover:shadow-lg transition-all duration-300">
+                    <div class="feature-icon">🔬</div>
+                    <h3 class="text-md font-semibold text-gray-800 mb-2">Lab & Scans</h3>
+                    <p class="text-gray-600 text-sm">Book diagnostic tests</p>
+                </a>
+                
+                <a href="insurance.html" class="service-card rounded-xl p-4 text-center hover:shadow-lg transition-all duration-300">
+                    <div class="feature-icon">📅</div>
+                    <h3 class="text-md font-semibold text-gray-800 mb-2">Insurance</h3>
+                    <p class="text-gray-600 text-sm">Insurance Policy </p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Health Analysis Carousel -->
+        <div class="card-gradient rounded-xl shadow-xl p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Health Analysis Tools</h2>
+            <div class="relative">
+                <div class="analysis-carousel-container">
+                    <div id="analysis-track" class="analysis-carousel-track">
+                        <!-- Card 1: Blood Analysis -->
+                        <div class="analysis-card-wrapper p-2">
+                            <a href="blood_analysis.html" class="analysis-card">
+                                <div class="analysis-card-icon bg-red-100 text-red-600 flex items-center justify-center">🩸</div>
+                                <h3 class="font-semibold text-lg text-gray-800 mt-4">Blood Analysis</h3>
+                                <p class="text-sm text-gray-600 mt-1">Get insights from your blood reports.</p>
+                            </a>
+                        </div>
+                        <!-- Card 2: Blood Sugar Analysis -->
+                        <div class="analysis-card-wrapper p-2">
+                            <a href="sugar.html" class="analysis-card">
+                                <div class="analysis-card-icon bg-blue-100 text-blue-600 flex items-center justify-center">🍬</div>
+                                <h3 class="font-semibold text-lg text-gray-800 mt-4">Blood Sugar Analysis</h3>
+                                <p class="text-sm text-gray-600 mt-1">Monitor your glucose or sugar levels.</p>
+                            </a>
+                        </div>
+                        <!-- Card 3: Symptom Checker -->
+                        <div class="analysis-card-wrapper p-2">
+                            <a href="symptom_checker.html" class="analysis-card">
+                                <div class="analysis-card-icon bg-yellow-100 text-yellow-600 flex items-center justify-center">🩺</div>
+                                <h3 class="font-semibold text-lg text-gray-800 mt-4">Symptom Checker</h3>
+                                <p class="text-sm text-gray-600 mt-1">Check your symptoms online.</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <button id="analysis-prev" class="carousel-arrow prev absolute top-1/2 left-0 -translate-y-1/2 bg-white/80 rounded-full w-10 h-10 items-center justify-center shadow-md text-gray-700 hover:bg-white z-10 hidden sm:flex"><i class="fas fa-chevron-left"></i></button>
+                <button id="analysis-next" class="carousel-arrow next absolute top-1/2 right-0 -translate-y-1/2 bg-white/80 rounded-full w-10 h-10 items-center justify-center shadow-md text-gray-700 hover:bg-white z-10 flex sm:flex"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Health Tools & Features -->
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <!-- Health Reminders -->
+            <div id="reminders" class="card-gradient rounded-xl shadow-xl p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Today's Reminders</h3>
+                <p id="reminders-subtitle" class="text-gray-600 mb-6">Loading your schedule for today...</p>
+                <div id="today-reminders-container" class="space-y-3">
+                    <!-- Today's reminders will be injected here by home.js -->
+                    <div class="text-center text-gray-500 py-4">
+                        <svg class="animate-spin h-5 w-5 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </div>
+                </div>
+                <a href="reminder.html" class="inline-block mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                    Manage Reminders
+                </a>
+            </div>
+            
+            <!-- My Health -->
+            <div class="card-gradient rounded-xl shadow-xl p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">My Health Dashboard</h3>
+                <p class="text-gray-600 mb-6">Track your health records, test results, and medical history all in one place.</p>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <a href="appointments.html" class="text-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                        <div id="appointment-count" class="text-2xl font-bold text-green-600">0</div>
+                        <div class="text-sm text-gray-600">Upcoming Appointments</div>
+                    </a>
+                    <a href="prescriptions.html" class="text-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors">
+                        <div id="prescription-count" class="text-2xl font-bold text-yellow-600">0</div>
+                        <div class="text-sm text-gray-600">Reports</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+   <footer class="py-6 flex-grow bottom-0 left-0 w-full"> <div class="text-center text-sm">© 2025 ZYVA Healthcare. All rights reserved to ZYVA.</div> </footer>
+
+   <!-- Live Notification Container -->
+   <div id="live-notification-container" class="fixed top-20 right-4 w-80 max-w-[calc(100vw-2rem)] space-y-3 z-[100]">
+       <!-- Notifications will be injected here by JS -->
+   </div>
+
+    <script src="home.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

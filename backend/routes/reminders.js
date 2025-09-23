@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const Reminder = require('../models/Reminder');
+const Reminder = require('../models/reminder');
 const { google } = require('googleapis');
 const { ObjectId } = require('mongodb');
 

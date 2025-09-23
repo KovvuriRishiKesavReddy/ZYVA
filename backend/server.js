@@ -2302,7 +2302,7 @@ if (process.env.NODE_ENV !== 'production') {
     
     // Serve main page
     app.get('/', (req, res) => {
-        res.sendFile(path.join(__dirname, '../appoint_doctor.html'));
+        res.sendFile(path.join(__dirname, '../login_page.html'));
     });
 }
 
@@ -2583,13 +2583,18 @@ app.post('/api/admin/cleanup-duplicate-appointments', authenticateToken, async (
     }
 });
 // Export for Vercel (replace the server.listen code)
-if (process.env.NODE_ENV !== 'production') {
-    // Only start server in development
-    server = app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
-        console.log(`ZYVA Healthcare Backend API ready`);
-    });
-} else {
-    // Export app for Vercel in production
-    module.exports = app;
-}
+server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`ZYVA Healthcare Backend API ready`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+}).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use. Trying port ${PORT + 1}...`);
+        server = app.listen(PORT + 1, '0.0.0.0', () => {
+            console.log(`Server running on port ${PORT + 1} (fallback)`);
+        });
+    } else {
+        console.error('Server startup error:', err);
+        process.exit(1);
+    }
+});

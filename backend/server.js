@@ -7,7 +7,7 @@ const { google } = require('googleapis'); // For Google Calendar
 const { GridFSBucket } = require('mongodb');
 const jwt = require('jsonwebtoken'); 
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const { ObjectId } = require('mongodb');
 const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
@@ -2296,6 +2296,15 @@ app.use('/api/reminders', authenticateToken, reminderRoutes);
 // This must be after all API routes to avoid conflicts.
 const staticPath = path.join(__dirname, '..');
 app.use(express.static(staticPath));
+if (process.env.NODE_ENV !== 'production') {
+    const staticPath = path.join(__dirname, '..');
+    app.use(express.static(staticPath));
+    
+    // Serve main page
+    app.get('/', (req, res) => {
+        res.sendFile(path.join(__dirname, '../appoint_doctor.html'));
+    });
+}
 
 // Error handling middleware
 app.use((error, req, res, next) => {
@@ -2573,3 +2582,14 @@ app.post('/api/admin/cleanup-duplicate-appointments', authenticateToken, async (
         res.status(500).json({ error: 'Failed to cleanup duplicates' });
     }
 });
+// Export for Vercel (replace the server.listen code)
+if (process.env.NODE_ENV !== 'production') {
+    // Only start server in development
+    server = app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+        console.log(`ZYVA Healthcare Backend API ready`);
+    });
+} else {
+    // Export app for Vercel in production
+    module.exports = app;
+}

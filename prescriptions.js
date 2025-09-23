@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-            const response = await fetch(`${API_BASE_URL}/api/presciptions/user`, {
+            const response = await fetch(`${API_BASE_URL}/api/prescriptions/user`, {
                 headers: { 'Authorization': `Bearer ${token}` },
                 signal: controller.signal
             });
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(key, value instanceof File ? `File: ${value.name}` : value);
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/presciptions/user/upload`, {
+            const response = await fetch(`${API_BASE_URL}/api/prescriptions/user/upload`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData,
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/presciptions/user/${fileId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/prescriptions/user/${fileId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` },
             });
@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/presciptions/user/view/${fileId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/prescriptions/user/view/${fileId}`, {
                 method: 'GET',
                 headers: { 
                     'Authorization': `Bearer ${token}` 

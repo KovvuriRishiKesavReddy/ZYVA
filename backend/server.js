@@ -625,6 +625,7 @@ const initializePrescriptionService = () => {
     try {
         const createPrescriptionRoutes = require('./routes/prescriptionRoutes');
         const prescriptionRoutes = createPrescriptionRoutes(db, JWT_SECRET, USERS_COLLECTION);
+        app.use('/api/prescriptions', prescriptionRoutes); 
         console.log('Prescription routes mounted at /api/prescriptions');
     } catch (e) {
         console.error('Failed to mount prescription routes:', e?.message || e);
@@ -2601,21 +2602,5 @@ app.post('/api/admin/cleanup-duplicate-appointments', authenticateToken, async (
     } catch (error) {
         console.error('Cleanup error:', error);
         res.status(500).json({ error: 'Failed to cleanup duplicates' });
-    }
-});
-// Export for Vercel (replace the server.listen code)
-server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`ZYVA Healthcare Backend API ready`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-}).on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use. Trying port ${PORT + 1}...`);
-        server = app.listen(PORT + 1, '0.0.0.0', () => {
-            console.log(`Server running on port ${PORT + 1} (fallback)`);
-        });
-    } else {
-        console.error('Server startup error:', err);
-        process.exit(1);
     }
 });

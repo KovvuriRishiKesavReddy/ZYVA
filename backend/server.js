@@ -170,7 +170,6 @@ const authenticateToken = async (req, res, next) => {
                 error: 'Access token required' 
             });
         }
-        next()
 
         // Handle dummy token for testing
         if (token === 'dummy-token-for-testing') {
@@ -626,7 +625,6 @@ const initializePrescriptionService = () => {
     try {
         const createPrescriptionRoutes = require('./routes/prescriptionRoutes');
         const prescriptionRoutes = createPrescriptionRoutes(db, JWT_SECRET, USERS_COLLECTION);
-        app.use('/api/prescriptions', prescriptionRoutes);
         console.log('Prescription routes mounted at /api/prescriptions');
     } catch (e) {
         console.error('Failed to mount prescription routes:', e?.message || e);
@@ -2325,12 +2323,18 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Error handling middleware
 app.use((error, req, res, next) => {
+    if (res.headersSent) {
+        return next(error); // Don't send response if headers already sent
+    }
     console.error('Server error:', error.message || error);
     res.status(500).json({ error: 'Internal server error' });
 });
 
 // 404 handler for any request that doesn't match an API route or a static file.
 app.use((req, res) => {
+    if (res.headersSent) {
+        return; // Don't send response if headers already sent
+    }
     res.status(404).send('<h1>404: Page Not Found</h1><p>The requested URL was not found on this server.</p>');
 });
 

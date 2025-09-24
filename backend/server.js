@@ -355,46 +355,94 @@ const mongoOptions = {
 let emailTransporter = null;
 
 if (process.env.COMPANY_EMAIL && process.env.COMPANY_EMAIL_PASSWORD) {
-    emailTransporter = nodemailer.createTransport({
+    emailTransporter = nodemailer.createTransporter({
         service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // Use STARTTLS
         auth: {
             user: process.env.COMPANY_EMAIL,
-            pass: process.env.COMPANY_EMAIL_PASSWORD
+            pass: process.env.COMPANY_EMAIL_PASSWORD // App Password
+        },
+        // Add these options for better Render compatibility
+        connectionTimeout: 30000, // 30 seconds
+        greetingTimeout: 30000,   // 30 seconds
+        socketTimeout: 30000,     // 30 seconds
+        pool: true,
+        maxConnections: 5,
+        maxMessages: 100,
+        rateLimit: 14, // 14 emails per second max
+        // TLS options for better compatibility
+        tls: {
+            rejectUnauthorized: false,
+            ciphers: 'SSLv3'
         }
     });
 
-    // Test the connection
-    emailTransporter.verify((error, success) => {
-        if (error) {
-            console.error('Gmail configuration error:', error);
-            console.error('Make sure you are using an App Password, not your regular Gmail password');
-            emailTransporter = null;
-        } else {
-            console.log('Gmail service ready for:', process.env.COMPANY_EMAIL);
-        }
-    });
+    // Test the connection with timeout
+    const testConnection = () => {
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                reject(new Error('Connection test timeout'));
+            }, 15000); // 15 second timeout
+
+            emailTransporter.verify((error, success) => {
+                clearTimeout(timeout);
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(success);
+                }
+            });
+        });
+    };
+
+    // Test connection with retry logic
+    testConnection()
+        .then(() => {
+            console.log('✅ Gmail service ready for:', process.env.COMPANY_EMAIL);
+        })
+        .catch(error => {
+            console.error('❌ Gmail configuration error:', error.message);
+            
+            if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+                console.error('🔧 Network timeout - this is common on Render. Email service will retry connections automatically.');
+                // Don't disable emailTransporter - just log the issue
+            } else if (error.message.includes('Invalid login')) {
+                console.error('🔧 Solution: Make sure you are using an App Password, not your regular Gmail password');
+                console.error('🔗 Generate App Password at: https://myaccount.google.com/apppasswords');
+                emailTransporter = null; // Disable if auth issue
+            } else {
+                console.error('🔧 Other email error:', error.message);
+            }
+        });
 } else {
-    console.warn('Company email credentials missing in .env file');
+    console.warn('⚠️  Company email credentials missing in .env file');
 }
 
-// Email sending function
+// IMPROVED: Replace your sendConfirmationEmail function with this version:
 async function sendConfirmationEmail(userId, subject, htmlBody) {
+    console.log('=== SENDING EMAIL ===');
+    console.log('User ID:', userId);
+    console.log('Subject:', subject);
+    console.log('Email service available:', !!emailTransporter);
+    
+    if (!db) {
+        console.error('❌ DB not connected, cannot send email.');
+        return { success: false, error: 'Database not connected' };
+    }
+
+    if (!emailTransporter) {
+        console.warn('⚠️  Gmail service not configured, skipping email send.');
+        return { success: false, error: 'Email service not configured' };
+    }
+
     try {
-        if (!db) {
-            console.error('DB not connected, cannot send email.');
-            return;
-        }
-
-        if (!emailTransporter) {
-            console.warn('Gmail service not configured, skipping email send.');
-            return;
-        }
-
         const user = await db.collection(USERS_COLLECTION).findOne({ _id: new ObjectId(userId) });
 
         if (!user || !user.email) {
-            console.info(`[Email] User ${userId} not found or missing email`);
-            return;
+            console.info(`ℹ️  User ${userId} not found or missing email`);
+            return { success: false, error: 'User not found or missing email' };
         }
 
         const mailOptions = {
@@ -408,21 +456,94 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
             replyTo: process.env.COMPANY_EMAIL
         };
 
-        const result = await emailTransporter.sendMail(mailOptions);
-        console.log(`Email sent from ${process.env.COMPANY_EMAIL} to ${user.email}`);
-        console.log('Subject:', subject);
-        console.log('Message ID:', result.messageId);
+        // Add retry logic for email sending
+        let attempt = 0;
+        const maxAttempts = 3;
+        
+        while (attempt < maxAttempts) {
+            try {
+                console.log(`📧 Sending email attempt ${attempt + 1}/${maxAttempts} to ${user.email}`);
+                
+                const result = await emailTransporter.sendMail(mailOptions);
+                
+                console.log(`✅ Email sent successfully to ${user.email}`);
+                console.log('📨 Subject:', subject);
+                console.log('🆔 Message ID:', result.messageId);
+                
+                return { success: true, messageId: result.messageId };
+                
+            } catch (sendError) {
+                attempt++;
+                console.error(`❌ Email send attempt ${attempt} failed:`, sendError.message);
+                
+                // If it's a timeout and we have more attempts, wait and retry
+                if ((sendError.code === 'ETIMEDOUT' || sendError.message.includes('timeout')) && attempt < maxAttempts) {
+                    console.log(`⏳ Waiting 2 seconds before retry...`);
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    continue;
+                }
+                
+                // If it's the last attempt or a non-timeout error, throw
+                throw sendError;
+            }
+        }
         
     } catch (error) {
-        console.error(`Failed to send email for user ${userId}:`, error.message);
+        console.error(`❌ Failed to send email for user ${userId}:`, error.message);
         
+        // Log specific error types
         if (error.message.includes('Invalid login')) {
-            console.error('Solution: Make sure you are using an App Password, not your regular Gmail password');
-            console.error('Generate App Password at: https://myaccount.google.com/apppasswords');
+            console.error('🔧 Solution: Make sure you are using an App Password, not your regular Gmail password');
+            console.error('🔗 Generate App Password at: https://myaccount.google.com/apppasswords');
+        } else if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+            console.error('🔧 Network timeout - common on cloud platforms like Render');
+            console.error('💡 Consider using a service like SendGrid or AWS SES for production');
         }
+        
+        return { success: false, error: error.message };
     }
 }
+app.get('/api/email/health', authenticateToken, async (req, res) => {
+    try {
+        if (!emailTransporter) {
+            return res.json({
+                success: false,
+                emailConfigured: false,
+                error: 'Email service not configured'
+            });
+        }
 
+        // Quick connection test
+        const testResult = await new Promise((resolve) => {
+            const timeout = setTimeout(() => {
+                resolve({ success: false, error: 'Connection timeout' });
+            }, 5000);
+
+            emailTransporter.verify((error, success) => {
+                clearTimeout(timeout);
+                if (error) {
+                    resolve({ success: false, error: error.message });
+                } else {
+                    resolve({ success: true });
+                }
+            });
+        });
+
+        res.json({
+            emailConfigured: true,
+            connectionTest: testResult,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        res.json({
+            success: false,
+            emailConfigured: !!emailTransporter,
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
 // Common email footer
 const getEmailFooter = () => {
     return `
@@ -2210,6 +2331,8 @@ app.post('/api/admin/migrate-user', authenticateToken, async (req, res) => {
 });
 // FIXED: Replace your payment confirmation endpoint with this corrected version
 
+// REPLACE your payment confirmation endpoint in server.js with this improved version:
+
 app.post('/api/appointments/:appointmentId/confirm-payment', authenticateToken, async (req, res) => {
     console.log('=== PAYMENT CONFIRMATION ENDPOINT HIT ===');
     console.log('Appointment ID:', req.params.appointmentId);
@@ -2217,13 +2340,21 @@ app.post('/api/appointments/:appointmentId/confirm-payment', authenticateToken, 
     console.log('User:', req.user?.email);
     
     try {
-        if (!db) return res.status(503).json({ error: 'DB not connected yet' });
+        if (!db) {
+            return res.status(503).json({ 
+                success: false, 
+                error: 'Database not connected' 
+            });
+        }
 
         const appointmentId = String(req.params.appointmentId || '').trim();
         const { transactionId, paymentMethod } = req.body;
 
         if (!appointmentId) {
-            return res.status(400).json({ error: 'Appointment ID required' });
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Appointment ID required' 
+            });
         }
 
         console.log(`Processing payment confirmation for appointment: ${appointmentId}`);
@@ -2235,15 +2366,20 @@ app.post('/api/appointments/:appointmentId/confirm-payment', authenticateToken, 
         });
 
         if (!appointment) {
-            return res.status(404).json({ error: 'Appointment not found' });
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Appointment not found' 
+            });
         }
 
         // Check if already confirmed to prevent duplicate processing
         if (appointment.payment?.status === 'completed') {
             console.log(`Payment already confirmed for appointment ${appointmentId}`);
-            return res.status(400).json({ 
-                error: 'Payment already confirmed for this appointment',
-                appointment: appointment
+            return res.json({ 
+                success: true, 
+                message: 'Payment already confirmed for this appointment',
+                appointment: appointment,
+                alreadyProcessed: true
             });
         }
 
@@ -2263,10 +2399,13 @@ app.post('/api/appointments/:appointmentId/confirm-payment', authenticateToken, 
         );
 
         if (updateResult.matchedCount === 0) {
-            return res.status(404).json({ error: 'Failed to update appointment' });
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Failed to update appointment' 
+            });
         }
 
-        console.log(`Payment confirmed for appointment ${appointmentId}`);
+        console.log(`✅ Payment confirmed for appointment ${appointmentId}`);
 
         // Get updated appointment for email/calendar
         const updatedAppointment = await db.collection(APPOINTMENTS_COLLECTION).findOne({
@@ -2274,35 +2413,49 @@ app.post('/api/appointments/:appointmentId/confirm-payment', authenticateToken, 
             userId: new ObjectId(req.user.id)
         });
 
-        // Send confirmation email ONCE
-        try {
-            const emailSubject = `Your ZYVA Appointment #${appointmentId} is Confirmed`;
-            await sendConfirmationEmail(req.user.id, emailSubject, formatAppointmentEmail(updatedAppointment));
-            console.log(`Confirmation email sent for appointment ${appointmentId}`);
-        } catch (emailError) {
-            console.error(`Failed to send confirmation email for appointment ${appointmentId}:`, emailError);
-        }
-
-        // Create Google Calendar events ONCE
-        try {
-            await createAppointmentCalendarEvents(req.user.id, updatedAppointment, appointmentId);
-            console.log(`Calendar events created for appointment ${appointmentId}`);
-        } catch (calendarError) {
-            console.error(`Failed to create calendar events for appointment ${appointmentId}:`, calendarError);
-        }
-
-        return res.json({
+        // IMPORTANT: Send the response FIRST, then do email/calendar in background
+        const responseData = {
             success: true,
             message: 'Payment confirmed and appointment updated',
-            appointment: updatedAppointment
+            appointment: updatedAppointment,
+            transactionId: transactionId,
+            paymentMethod: paymentMethod
+        };
+
+        // Send response immediately
+        res.json(responseData);
+
+        // Now do email and calendar operations in background (don't await these)
+        setImmediate(async () => {
+            // Send confirmation email
+            try {
+                const emailSubject = `Your ZYVA Appointment #${appointmentId} is Confirmed`;
+                await sendConfirmationEmail(req.user.id, emailSubject, formatAppointmentEmail(updatedAppointment));
+                console.log(`✅ Confirmation email queued for appointment ${appointmentId}`);
+            } catch (emailError) {
+                console.error(`❌ Failed to send confirmation email for appointment ${appointmentId}:`, emailError.message);
+            }
+
+            // Create Google Calendar events
+            try {
+                await createAppointmentCalendarEvents(req.user.id, updatedAppointment, appointmentId);
+                console.log(`✅ Calendar events created for appointment ${appointmentId}`);
+            } catch (calendarError) {
+                console.error(`❌ Failed to create calendar events for appointment ${appointmentId}:`, calendarError.message);
+            }
         });
 
     } catch (error) {
-        console.error('Payment confirmation error:', error.message || error);
-        return res.status(500).json({ 
-            success: false,
-            error: 'Failed to confirm payment' 
-        });
+        console.error('❌ Payment confirmation error:', error.message || error);
+        
+        // Make sure we always return valid JSON
+        if (!res.headersSent) {
+            return res.status(500).json({ 
+                success: false,
+                error: 'Failed to confirm payment',
+                details: error.message
+            });
+        }
     }
 });
 // ===== REMINDER MANAGEMENT ENDPOINTS =====

@@ -24,7 +24,7 @@ const ORDERS_COLLECTION = 'orders';
 const APPOINTMENTS_COLLECTION = 'appointments';
 const INSURANCES_COLLECTION = 'insurances';
 const REMINDERS_COLLECTION = 'reminders';
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://zyva-healthcare-utus.onrender.com';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback';
@@ -32,14 +32,30 @@ const GOOGLE_REGISTER_REDIRECT_URI = process.env.GOOGLE_REGISTER_REDIRECT_URI ||
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 
 // Middleware
+// Middleware - Fixed CORS for Render
+const allowedOrigins = [
+    'https://zyva-healthcare-utus.onrender.com',
+    'http://localhost:3000',
+    'http://localhost:3001'
+];
+
 app.use(cors({
-    origin: (origin, cb) => {
-        if (ALLOWED_ORIGIN === '*' || !origin) return cb(null, true);
-        if (origin === ALLOWED_ORIGIN) return cb(null, true);
-        return cb(null, false);
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log(`CORS blocked for origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
     },
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+
 const compression = require('compression');
 app.use(compression({
     filter: (req, res) => {
@@ -2318,7 +2334,7 @@ app.use((req, res) => {
     res.status(404).send('<h1>404: Page Not Found</h1><p>The requested URL was not found on this server.</p>');
 });
 
-server = app.listen(PORT, () => {
+server = app.listen(PORT,'0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
     console.log(`ZYVA Healthcare Backend API ready`);
     console.log(`Available endpoints:`);

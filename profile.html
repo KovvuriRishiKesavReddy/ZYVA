@@ -72,7 +72,7 @@
 
     <footer class="py-6 flex-grow bottom-0 left-0 w-full"> <div class="text-center text-sm">© 2025 ZYVA Healthcare. All rights reserved to ZYVA.</div> </footer>
 
-    <script>window.API_BASE_URL = window.API_BASE_URL || 'http://localhost:3000/api';</script>
+    <script>window.API_BASE_URL = window.API_BASE_URL || 'https://zyva-healthcare-utus.onrender.com/api';</script>
     <script>
     (function(){
         // Get authentication data
@@ -143,7 +143,7 @@
 
         // Only fetch fresh data if we have a user ID
         if (user.id) {
-            fetch(`http://localhost:3000/api/user/by-id/${user.id}`, {
+            fetch(`https://zyva-healthcare-utus.onrender.com/api/user/by-id/${user.id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             }).then(res => {
                 if (!res.ok) {

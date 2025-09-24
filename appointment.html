@@ -252,7 +252,7 @@
       if (selectedScans.length === 0) { alert('No scans selected.'); return; }
       try {
         const payload = { type: 'scan', items: selectedScans, date, time, location };
-        const res = await fetch('http://localhost:3000/api/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+        const res = await fetch('https://zyva-healthcare-utus.onrender.com/api/appointments', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
         if (res.status === 401 || res.status === 403) { alert('Session expired. Please login again.'); window.location.href = 'login_page.html'; return; }
         
         if (!res.ok) {

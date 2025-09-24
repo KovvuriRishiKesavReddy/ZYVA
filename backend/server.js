@@ -355,7 +355,7 @@ const mongoOptions = {
 let emailTransporter = null;
 
 if (process.env.COMPANY_EMAIL && process.env.COMPANY_EMAIL_PASSWORD) {
-    emailTransporter = nodemailer.createTransporter({
+    emailTransporter = nodemailer.createTransport({
         service: 'gmail',
         host: 'smtp.gmail.com',
         port: 587,

@@ -14,6 +14,7 @@ const { GridFsStorage } = require('multer-gridfs-storage');
 const nodemailer = require('nodemailer');
 const { Resend } = require('resend');
 const postmark = require('postmark');
+const sgMail = require('@sendgrid/mail');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -353,14 +354,19 @@ const mongoOptions = {
     // Read preference for faster reads
     readPreference: 'primaryPreferred'
 };
-// Email sender setup priority: Postmark > Resend > Gmail SMTP
+// Email sender setup priority: Postmark > SendGrid > Resend > Gmail SMTP
 let emailTransporter = null;
 let resendClient = null;
 let postmarkClient = null;
+let sendgridActive = false;
 
 if (process.env.POSTMARK_SERVER_TOKEN) {
 	postmarkClient = new postmark.ServerClient(process.env.POSTMARK_SERVER_TOKEN);
 	console.log('✅ Postmark email service configured');
+} else if (process.env.SENDGRID_API_KEY) {
+	sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+	sendgridActive = true;
+	console.log('✅ SendGrid email service configured');
 } else if (process.env.RESEND_API_KEY) {
 	resendClient = new Resend(process.env.RESEND_API_KEY);
 	console.log('✅ Resend email service configured');
@@ -434,14 +440,14 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
     console.log('=== SENDING EMAIL ===');
     console.log('User ID:', userId);
     console.log('Subject:', subject);
-    console.log('Email service available:', !!emailTransporter || !!resendClient || !!postmarkClient);
+    console.log('Email service available:', !!emailTransporter || !!resendClient || !!postmarkClient || !!sendgridActive);
     
     if (!db) {
         console.error('❌ DB not connected, cannot send email.');
         return { success: false, error: 'Database not connected' };
     }
 
-    if (!emailTransporter && !resendClient && !postmarkClient) {
+    if (!emailTransporter && !resendClient && !postmarkClient && !sendgridActive) {
         console.warn('⚠️  Email service not configured, skipping email send.');
         return { success: false, error: 'Email service not configured' };
     }
@@ -487,6 +493,21 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
                     console.log('📨 Subject:', subject);
                     console.log('🆔 Message ID:', pmResult?.MessageID || pmResult?.MessageId || pmResult?.MessageID);
                     return { success: true, messageId: pmResult?.MessageID || pmResult?.MessageId };
+                } else if (sendgridActive) {
+                    const fromAddress = process.env.SENDGRID_FROM || process.env.COMPANY_EMAIL || 'no-reply@example.com';
+                    const msg = {
+                        to: user.email,
+                        from: fromAddress,
+                        subject: subject,
+                        html: htmlBody,
+                        replyTo: process.env.COMPANY_EMAIL || undefined,
+                    };
+                    const [sgRes] = await sgMail.send(msg);
+                    const messageId = sgRes?.headers?.['x-message-id'] || sgRes?.headers?.['x-sendgrid-message-id'];
+                    console.log(`✅ Email sent successfully to ${user.email}`);
+                    console.log('📨 Subject:', subject);
+                    console.log('🆔 Message ID:', messageId || 'unknown');
+                    return { success: true, messageId: messageId || 'unknown' };
                 } else if (resendClient) {
                     const fromAddress = process.env.RESEND_FROM || 'onboarding@resend.dev';
                     const resendResult = await resendClient.emails.send({
@@ -537,7 +558,7 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
 }
 app.get('/api/email/health', authenticateToken, async (req, res) => {
     try {
-        if (!emailTransporter && !resendClient && !postmarkClient) {
+        if (!emailTransporter && !resendClient && !postmarkClient && !sendgridActive) {
             return res.json({
                 success: false,
                 emailConfigured: false,
@@ -565,8 +586,8 @@ app.get('/api/email/health', authenticateToken, async (req, res) => {
 		}
 
         res.json({
-            emailConfigured: !!emailTransporter || !!resendClient || !!postmarkClient,
-            using: postmarkClient ? 'postmark' : (resendClient ? 'resend' : (emailTransporter ? 'gmail-smtp' : 'none')),
+            emailConfigured: !!emailTransporter || !!resendClient || !!postmarkClient || !!sendgridActive,
+            using: postmarkClient ? 'postmark' : (sendgridActive ? 'sendgrid' : (resendClient ? 'resend' : (emailTransporter ? 'gmail-smtp' : 'none'))),
             connectionTest: testResult,
             timestamp: new Date().toISOString()
         });

@@ -870,6 +870,22 @@ Thank you for choosing ZYVA Healthcare!
             location: location
         });
 
+        // Extra: 15-minute reminder at the exact appointment time
+        try {
+            const aptReminderEnd = new Date(appointmentDate);
+            aptReminderEnd.setMinutes(aptReminderEnd.getMinutes() + 15);
+            const aptReminderEndLocal = buildLocal(aptReminderEnd);
+            await createCalendarEvent(userId, {
+                summary: `Reminder: ZYVA appointment now - ${itemSummary}`,
+                description: `Your appointment starts now at ${time}.\n\nLocation: ${location}\nAppointment ID: ${appointmentId}`,
+                startTime: startLocal,
+                endTime: aptReminderEndLocal,
+                location: location
+            });
+        } catch (e) {
+            console.warn('[Calendar] Skipped in-time reminder event due to:', e?.message || e);
+        }
+
         // Create reminder events
         await createReminderEvents(userId, appointmentId, itemSummary, appointmentDate, time, location);
 

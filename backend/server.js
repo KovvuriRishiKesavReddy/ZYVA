@@ -870,21 +870,7 @@ Thank you for choosing ZYVA Healthcare!
             location: location
         });
 
-        // Extra: 15-minute reminder at the exact appointment time
-        try {
-            const aptReminderEnd = new Date(appointmentDate);
-            aptReminderEnd.setMinutes(aptReminderEnd.getMinutes() + 15);
-            const aptReminderEndLocal = buildLocal(aptReminderEnd);
-            await createCalendarEvent(userId, {
-                summary: `Reminder: ZYVA appointment now - ${itemSummary}`,
-                description: `Your appointment starts now at ${time}.\n\nLocation: ${location}\nAppointment ID: ${appointmentId}`,
-                startTime: startLocal,
-                endTime: aptReminderEndLocal,
-                location: location
-            });
-        } catch (e) {
-            console.warn('[Calendar] Skipped in-time reminder event due to:', e?.message || e);
-        }
+        // Removed: 15-minute reminder at the exact appointment time per user request
 
         // Create reminder events
         await createReminderEvents(userId, appointmentId, itemSummary, appointmentDate, time, location);
@@ -898,6 +884,13 @@ Thank you for choosing ZYVA Healthcare!
 async function createReminderEvents(userId, appointmentId, itemSummary, appointmentDate, time, location) {
     try {
         const now = new Date();
+        // Local helper to format YYYY-MM-DD (same as used above but scoped here too)
+        const fmtYMD = (d) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        };
         
         // Day-before reminder (6 AM day before appointment)
         const dayBefore = new Date(appointmentDate);
@@ -923,8 +916,13 @@ async function createReminderEvents(userId, appointmentId, itemSummary, appointm
         // Day-of reminder (6 AM on appointment day)
         const dayOf = new Date(appointmentDate);
         dayOf.setHours(6, 0, 0, 0);
-        
-        if (dayOf > now && dayOf < appointmentDate) {
+        // If appointment is booked after 6 AM on the same day, also create the reminder immediately
+        // Condition: it's same calendar day as appointment and now is after 6 AM but before appointment start
+        const isSameDay = now.getFullYear() === appointmentDate.getFullYear() &&
+                          now.getMonth() === appointmentDate.getMonth() &&
+                          now.getDate() === appointmentDate.getDate();
+
+        if ((dayOf > now && dayOf < appointmentDate) || (isSameDay && now > dayOf && now < appointmentDate)) {
             const dayOfStart = `${fmtYMD(dayOf)}T06:00:00`;
             const dayOfEndStr = `${fmtYMD(dayOf)}T06:15:00`;
             console.log(`[Calendar] Creating day-of reminder for ${dayOfStart}`);

@@ -12,6 +12,7 @@ const { ObjectId } = require('mongodb');
 const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
 const nodemailer = require('nodemailer');
+const { createTransport: createResendTransport } = require('nodemailer-resend');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -351,10 +352,15 @@ const mongoOptions = {
     // Read preference for faster reads
     readPreference: 'primaryPreferred'
 };
-// Nodemailer (Gmail) setup
+// Email transporter setup (Resend preferred, fallback to Gmail SMTP)
 let emailTransporter = null;
 
-if (process.env.COMPANY_EMAIL && process.env.COMPANY_EMAIL_PASSWORD) {
+if (process.env.RESEND_API_KEY) {
+	emailTransporter = createResendTransport({
+		apiKey: process.env.RESEND_API_KEY
+	});
+	console.log('✅ Resend email service configured');
+} else if (process.env.COMPANY_EMAIL && process.env.COMPANY_EMAIL_PASSWORD) {
     emailTransporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
@@ -386,25 +392,25 @@ if (process.env.COMPANY_EMAIL && process.env.COMPANY_EMAIL_PASSWORD) {
         });
     };
 
-    // Test connection with retry logic
-    testConnection()
-        .then(() => {
-            console.log('✅ Gmail service ready for:', process.env.COMPANY_EMAIL);
-        })
-        .catch(error => {
-            console.error('❌ Gmail configuration error:', error.message);
-            
-            if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
-                console.error('🔧 Network timeout - this is common on Render. Email service will retry connections automatically.');
-                // Don't disable emailTransporter - just log the issue
-            } else if (error.message.includes('Invalid login')) {
-                console.error('🔧 Solution: Make sure you are using an App Password, not your regular Gmail password');
-                console.error('🔗 Generate App Password at: https://myaccount.google.com/apppasswords');
-                emailTransporter = null; // Disable if auth issue
-            } else {
-                console.error('🔧 Other email error:', error.message);
-            }
-        });
+	// Test connection with retry logic
+	testConnection()
+		.then(() => {
+			console.log('✅ Gmail service ready for:', process.env.COMPANY_EMAIL);
+		})
+		.catch(error => {
+			console.error('❌ Gmail configuration error:', error.message);
+			
+			if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+				console.error('🔧 Network timeout - this is common on Render. Email service will retry connections automatically.');
+				// Don't disable emailTransporter - just log the issue
+			} else if (error.message.includes('Invalid login')) {
+				console.error('🔧 Solution: Make sure you are using an App Password, not your regular Gmail password');
+				console.error('🔗 Generate App Password at: https://myaccount.google.com/apppasswords');
+				emailTransporter = null; // Disable if auth issue
+			} else {
+				console.error('🔧 Other email error:', error.message);
+			}
+		});
 } else {
     console.warn('⚠️  Company email credentials missing in .env file');
 }
@@ -502,21 +508,24 @@ app.get('/api/email/health', authenticateToken, async (req, res) => {
             });
         }
 
-        // Quick connection test
-        const testResult = await new Promise((resolve) => {
-            const timeout = setTimeout(() => {
-                resolve({ success: false, error: 'Connection timeout' });
-            }, 5000);
+		// Quick connection test; some transports may not support verify()
+		let testResult = { success: true };
+		if (typeof emailTransporter.verify === 'function') {
+			testResult = await new Promise((resolve) => {
+				const timeout = setTimeout(() => {
+					resolve({ success: false, error: 'Connection timeout' });
+				}, 5000);
 
-            emailTransporter.verify((error, success) => {
-                clearTimeout(timeout);
-                if (error) {
-                    resolve({ success: false, error: error.message });
-                } else {
-                    resolve({ success: true });
-                }
-            });
-        });
+				emailTransporter.verify((error, success) => {
+					clearTimeout(timeout);
+					if (error) {
+						resolve({ success: false, error: error.message });
+					} else {
+						resolve({ success: true });
+					}
+				});
+			});
+		}
 
         res.json({
             emailConfigured: true,

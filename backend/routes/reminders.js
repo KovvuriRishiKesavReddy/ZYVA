@@ -67,10 +67,10 @@ async function createCalendarEvents(userId, reminder) {
         throw error;
     }
 }
-// @route   POST /api/reminders
+// @route   POST /api/reminders (and /api/reminders/user)
 // @desc    Create a new medicine reminder
 // @access  Private (token checked in server.js)
-router.post('/', async (req, res) => {
+router.post(['/', '/user'], async (req, res) => {
     console.log('[POST /api/reminders] - Request received.');
     const {
         medicineName,

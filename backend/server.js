@@ -13,6 +13,7 @@ const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
 const nodemailer = require('nodemailer');
 const { Resend } = require('resend');
+const postmark = require('postmark');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -352,11 +353,15 @@ const mongoOptions = {
     // Read preference for faster reads
     readPreference: 'primaryPreferred'
 };
-// Email sender setup: use Resend HTTP API if available, else Gmail SMTP
+// Email sender setup priority: Postmark > Resend > Gmail SMTP
 let emailTransporter = null;
 let resendClient = null;
+let postmarkClient = null;
 
-if (process.env.RESEND_API_KEY) {
+if (process.env.POSTMARK_SERVER_TOKEN) {
+	postmarkClient = new postmark.ServerClient(process.env.POSTMARK_SERVER_TOKEN);
+	console.log('✅ Postmark email service configured');
+} else if (process.env.RESEND_API_KEY) {
 	resendClient = new Resend(process.env.RESEND_API_KEY);
 	console.log('✅ Resend email service configured');
 } else if (process.env.COMPANY_EMAIL && process.env.COMPANY_EMAIL_PASSWORD) {
@@ -429,14 +434,14 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
     console.log('=== SENDING EMAIL ===');
     console.log('User ID:', userId);
     console.log('Subject:', subject);
-    console.log('Email service available:', !!emailTransporter || !!resendClient);
+    console.log('Email service available:', !!emailTransporter || !!resendClient || !!postmarkClient);
     
     if (!db) {
         console.error('❌ DB not connected, cannot send email.');
         return { success: false, error: 'Database not connected' };
     }
 
-    if (!emailTransporter && !resendClient) {
+    if (!emailTransporter && !resendClient && !postmarkClient) {
         console.warn('⚠️  Email service not configured, skipping email send.');
         return { success: false, error: 'Email service not configured' };
     }
@@ -468,7 +473,21 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
             try {
                 console.log(`📧 Sending email attempt ${attempt + 1}/${maxAttempts} to ${user.email}`);
 
-                if (resendClient) {
+                if (postmarkClient) {
+                    const fromAddress = process.env.POSTMARK_FROM || process.env.COMPANY_EMAIL || 'no-reply@example.com';
+                    const pmResult = await postmarkClient.sendEmail({
+                        From: fromAddress,
+                        To: user.email,
+                        Subject: subject,
+                        HtmlBody: htmlBody,
+                        ReplyTo: process.env.COMPANY_EMAIL || undefined,
+                        MessageStream: process.env.POSTMARK_STREAM || 'outbound'
+                    });
+                    console.log(`✅ Email sent successfully to ${user.email}`);
+                    console.log('📨 Subject:', subject);
+                    console.log('🆔 Message ID:', pmResult?.MessageID || pmResult?.MessageId || pmResult?.MessageID);
+                    return { success: true, messageId: pmResult?.MessageID || pmResult?.MessageId };
+                } else if (resendClient) {
                     const fromAddress = process.env.RESEND_FROM || 'onboarding@resend.dev';
                     const resendResult = await resendClient.emails.send({
                         from: `ZYVA Healthcare <${fromAddress}>`,
@@ -518,7 +537,7 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
 }
 app.get('/api/email/health', authenticateToken, async (req, res) => {
     try {
-        if (!emailTransporter && !resendClient) {
+        if (!emailTransporter && !resendClient && !postmarkClient) {
             return res.json({
                 success: false,
                 emailConfigured: false,
@@ -546,8 +565,8 @@ app.get('/api/email/health', authenticateToken, async (req, res) => {
 		}
 
         res.json({
-            emailConfigured: !!emailTransporter || !!resendClient,
-            using: resendClient ? 'resend' : (emailTransporter ? 'gmail-smtp' : 'none'),
+            emailConfigured: !!emailTransporter || !!resendClient || !!postmarkClient,
+            using: postmarkClient ? 'postmark' : (resendClient ? 'resend' : (emailTransporter ? 'gmail-smtp' : 'none')),
             connectionTest: testResult,
             timestamp: new Date().toISOString()
         });

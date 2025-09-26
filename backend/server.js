@@ -1031,6 +1031,11 @@ app.get('/api/prescriptions/health', (req, res) => {
     });
 });
 
+// Root health check for frontend probes
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Upload prescription file
 app.post('/api/prescriptions/upload', authenticateToken, (req, res) => {
     console.log('Upload request received from user:', req.user?.id || 'unknown');
@@ -1163,6 +1168,11 @@ app.post('/api/prescriptions/upload', authenticateToken, (req, res) => {
             }
         }
     });
+});
+
+// Alias for frontend path /api/prescriptions/user/upload
+app.post('/api/prescriptions/user/upload', authenticateToken, (req, res) => {
+    return res.redirect(307, '/api/prescriptions/upload');
 });
 
 // Updated GET endpoint to show custom names
@@ -1305,6 +1315,12 @@ app.get('/api/prescriptions/view/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// Alias for frontend path /api/prescriptions/user/view/:id
+app.get('/api/prescriptions/user/view/:id', authenticateToken, (req, res) => {
+    const { id } = req.params;
+    return res.redirect(307, `/api/prescriptions/view/${id}`);
+});
+
 // Delete prescription file
 app.delete('/api/prescriptions/:id', authenticateToken, async (req, res) => {
     try {
@@ -1363,6 +1379,12 @@ app.delete('/api/prescriptions/:id', authenticateToken, async (req, res) => {
             error: 'Failed to delete file' 
         });
     }
+});
+
+// Alias for frontend path /api/prescriptions/user/:id
+app.delete('/api/prescriptions/user/:id', authenticateToken, (req, res) => {
+    const { id } = req.params;
+    return res.redirect(307, `/api/prescriptions/${id}`);
 });
 
 // ===== GOOGLE CALENDAR AUTH ROUTES =====

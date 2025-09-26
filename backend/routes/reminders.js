@@ -28,19 +28,43 @@ async function createCalendarEvents(userId, reminder) {
     try {
         const eventIds = [];
 
-        // The end date for recurrence needs to be in 'YYYYMMDDTHHMMSSZ' format
-        const untilDate = reminder.endDate ? new Date(reminder.endDate).toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z' : null;
+        // Helper to format a date-only and time into 'YYYY-MM-DDTHH:MM:SS' (no timezone designator)
+        const formatLocalDateTime = (dateOnly, hour, minute) => {
+            const d = new Date(dateOnly);
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hh = String(parseInt(hour, 10)).padStart(2, '0');
+            const mm = String(parseInt(minute, 10)).padStart(2, '0');
+            return `${y}-${m}-${day}T${hh}:${mm}:00`;
+        };
+
+        // Recurrence end date in UTC-less local format 'YYYYMMDDT000000Z'
+        const untilDate = reminder.endDate
+            ? new Date(reminder.endDate).toISOString().replace(/[-:.]/g, '').slice(0, 8) + 'T000000Z'
+            : null;
 
         for (const time of reminder.times) {
-            const [hour, minute] = time.split(':');
-            const eventStartTime = new Date(reminder.startDate);
-            eventStartTime.setHours(hour, minute, 0, 0);
+            const [hour, minute] = String(time).split(':');
+            const startLocal = formatLocalDateTime(reminder.startDate, hour, minute);
+
+            // Compute end time as +30 minutes based on a Date for convenience, then format back without timezone designator
+            const endDateObj = new Date(`${startLocal}:00Z`); // temporary baseline; value will be overridden by explicit timeZone below
+            endDateObj.setMinutes(endDateObj.getMinutes() + 30);
+            const endLocal = `${startLocal.slice(0, 14)}${String(parseInt(startLocal.slice(14, 16), 10)).padStart(2, '0')}:00`;
+            // The above keeps minutes; but better compute from endDateObj components
+            const endY = endDateObj.getUTCFullYear();
+            const endM = String(endDateObj.getUTCMonth() + 1).padStart(2, '0');
+            const endD = String(endDateObj.getUTCDate()).padStart(2, '0');
+            const endH = String(endDateObj.getUTCHours()).padStart(2, '0');
+            const endMin = String(endDateObj.getUTCMinutes()).padStart(2, '0');
+            const endLocalFixed = `${endY}-${endM}-${endD}T${endH}:${endMin}:00`;
 
             const event = {
                 summary: `Take: ${reminder.medicineName}`,
                 description: `Dosage: ${reminder.dosage || 'N/A'}\nNotes: ${reminder.notes || 'None'}`,
-                start: { dateTime: eventStartTime.toISOString(), timeZone: 'Asia/Kolkata' },
-                end: { dateTime: new Date(eventStartTime.getTime() + 30 * 60000).toISOString(), timeZone: 'Asia/Kolkata' }, // 30 min duration
+                start: { dateTime: startLocal, timeZone: 'Asia/Kolkata' },
+                end: { dateTime: endLocalFixed, timeZone: 'Asia/Kolkata' },
                 recurrence: [`RRULE:FREQ=DAILY${untilDate ? `;UNTIL=${untilDate}` : ''}`],
                 reminders: { useDefault: true },
             };

@@ -28,43 +28,51 @@ async function createCalendarEvents(userId, reminder) {
     try {
         const eventIds = [];
 
-        // Helper to format a date-only and time into 'YYYY-MM-DDTHH:MM:SS' (no timezone designator)
-        const formatLocalDateTime = (dateOnly, hour, minute) => {
-            const d = new Date(dateOnly);
+        // Helper: format Date to 'YYYY-MM-DD'
+        const formatYMD = (d) => {
             const y = d.getFullYear();
             const m = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
-            const hh = String(parseInt(hour, 10)).padStart(2, '0');
-            const mm = String(parseInt(minute, 10)).padStart(2, '0');
-            return `${y}-${m}-${day}T${hh}:${mm}:00`;
+            return `${y}-${m}-${day}`;
         };
 
-        // Recurrence end date in UTC-less local format 'YYYYMMDDT000000Z'
+        // Helper: build 'YYYY-MM-DDTHH:MM:SS' without timezone designator
+        const buildDateTime = (ymd, hh, mm) => `${ymd}T${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00`;
+
+        // Add minutes to a local date+time without converting timezones
+        const addMinutesLocal = (dateOnly, hour, minute, delta) => {
+            const base = new Date(dateOnly);
+            const total = hour * 60 + minute + delta;
+            const daysOffset = Math.floor(total / 1440);
+            const rem = ((total % 1440) + 1440) % 1440;
+            const newHour = Math.floor(rem / 60);
+            const newMin = rem % 60;
+            base.setDate(base.getDate() + daysOffset);
+            return { ymd: formatYMD(base), hour: newHour, minute: newMin };
+        };
+
+        // Recurrence UNTIL requires UTC timestamp 'YYYYMMDDT000000Z' – use endDate midnight UTC
         const untilDate = reminder.endDate
             ? new Date(reminder.endDate).toISOString().replace(/[-:.]/g, '').slice(0, 8) + 'T000000Z'
             : null;
 
         for (const time of reminder.times) {
-            const [hour, minute] = String(time).split(':');
-            const startLocal = formatLocalDateTime(reminder.startDate, hour, minute);
+            const [hourStr, minuteStr] = String(time).split(':');
+            const hour = parseInt(hourStr, 10) || 0;
+            const minute = parseInt(minuteStr, 10) || 0;
 
-            // Compute end time as +30 minutes based on a Date for convenience, then format back without timezone designator
-            const endDateObj = new Date(`${startLocal}:00Z`); // temporary baseline; value will be overridden by explicit timeZone below
-            endDateObj.setMinutes(endDateObj.getMinutes() + 30);
-            const endLocal = `${startLocal.slice(0, 14)}${String(parseInt(startLocal.slice(14, 16), 10)).padStart(2, '0')}:00`;
-            // The above keeps minutes; but better compute from endDateObj components
-            const endY = endDateObj.getUTCFullYear();
-            const endM = String(endDateObj.getUTCMonth() + 1).padStart(2, '0');
-            const endD = String(endDateObj.getUTCDate()).padStart(2, '0');
-            const endH = String(endDateObj.getUTCHours()).padStart(2, '0');
-            const endMin = String(endDateObj.getUTCMinutes()).padStart(2, '0');
-            const endLocalFixed = `${endY}-${endM}-${endD}T${endH}:${endMin}:00`;
+            const startDateObj = new Date(reminder.startDate);
+            const startYmd = formatYMD(startDateObj);
+            const startLocal = buildDateTime(startYmd, hour, minute);
+
+            const endLocalParts = addMinutesLocal(reminder.startDate, hour, minute, 30);
+            const endLocal = buildDateTime(endLocalParts.ymd, endLocalParts.hour, endLocalParts.minute);
 
             const event = {
                 summary: `Take: ${reminder.medicineName}`,
                 description: `Dosage: ${reminder.dosage || 'N/A'}\nNotes: ${reminder.notes || 'None'}`,
                 start: { dateTime: startLocal, timeZone: 'Asia/Kolkata' },
-                end: { dateTime: endLocalFixed, timeZone: 'Asia/Kolkata' },
+                end: { dateTime: endLocal, timeZone: 'Asia/Kolkata' },
                 recurrence: [`RRULE:FREQ=DAILY${untilDate ? `;UNTIL=${untilDate}` : ''}`],
                 reminders: { useDefault: true },
             };

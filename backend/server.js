@@ -469,7 +469,7 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
                 console.log(`📧 Sending email attempt ${attempt + 1}/${maxAttempts} to ${user.email}`);
 
                 if (resendClient) {
-                    const fromAddress = process.env.COMPANY_EMAIL || 'no-reply@resend.dev';
+                    const fromAddress = process.env.RESEND_FROM || 'onboarding@resend.dev';
                     const resendResult = await resendClient.emails.send({
                         from: `ZYVA Healthcare <${fromAddress}>`,
                         to: user.email,

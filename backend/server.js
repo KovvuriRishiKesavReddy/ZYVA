@@ -820,13 +820,24 @@ async function createAppointmentCalendarEvents(userId, appointment, appointmentI
             return;
         }
 
-        // Create main appointment event
+        // Create main appointment event with local date-time strings
         const appointmentDate = new Date(date);
         const [hours, minutes] = time.split(':').map(Number);
-        
         appointmentDate.setHours(hours, minutes, 0, 0);
         const appointmentEndDate = new Date(appointmentDate);
         appointmentEndDate.setHours(appointmentEndDate.getHours() + 1); // 1 hour duration
+        
+        const fmtYMD = (d) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        };
+        const buildLocal = (d) => {
+            return `${fmtYMD(d)}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:00`;
+        };
+        const startLocal = buildLocal(appointmentDate);
+        const endLocal = buildLocal(appointmentEndDate);
 
         const eventTitle = `ZYVA Healthcare: ${itemSummary}`;
         const eventDescription = `
@@ -844,13 +855,13 @@ Thank you for choosing ZYVA Healthcare!
         `.trim();
 
         console.log(`[Calendar] Creating main appointment event: ${eventTitle}`);
-        console.log(`[Calendar] Event time: ${appointmentDate.toISOString()} to ${appointmentEndDate.toISOString()}`);
+        console.log(`[Calendar] Event time (local): ${startLocal} to ${endLocal}`);
         
         await createCalendarEvent(userId, {
             summary: eventTitle,
             description: eventDescription,
-            startTime: appointmentDate.toISOString(),
-            endTime: appointmentEndDate.toISOString(),
+            startTime: startLocal,
+            endTime: endLocal,
             location: location
         });
 
@@ -876,12 +887,14 @@ async function createReminderEvents(userId, appointmentId, itemSummary, appointm
             const dayBeforeEnd = new Date(dayBefore);
             dayBeforeEnd.setMinutes(dayBefore.getMinutes() + 15);
             
-            console.log(`[Calendar] Creating day-before reminder for ${dayBefore.toISOString()}`);
+            const dayBeforeStart = `${fmtYMD(dayBefore)}T06:00:00`;
+            const dayBeforeEndStr = `${fmtYMD(dayBefore)}T06:15:00`;
+            console.log(`[Calendar] Creating day-before reminder for ${dayBeforeStart}`);
             await createCalendarEvent(userId, {
                 summary: `Reminder: ZYVA appointment tomorrow - ${itemSummary}`,
                 description: `This is a reminder for your appointment tomorrow at ${time}.\n\nLocation: ${location}\nAppointment ID: ${appointmentId}\n\nPlease arrive 15 minutes early.`,
-                startTime: dayBefore.toISOString(),
-                endTime: dayBeforeEnd.toISOString(),
+                startTime: dayBeforeStart,
+                endTime: dayBeforeEndStr,
                 location: location
             });
         }
@@ -891,15 +904,14 @@ async function createReminderEvents(userId, appointmentId, itemSummary, appointm
         dayOf.setHours(6, 0, 0, 0);
         
         if (dayOf > now && dayOf < appointmentDate) {
-            const dayOfEnd = new Date(dayOf);
-            dayOfEnd.setMinutes(dayOf.getMinutes() + 15);
-            
-            console.log(`[Calendar] Creating day-of reminder for ${dayOf.toISOString()}`);
+            const dayOfStart = `${fmtYMD(dayOf)}T06:00:00`;
+            const dayOfEndStr = `${fmtYMD(dayOf)}T06:15:00`;
+            console.log(`[Calendar] Creating day-of reminder for ${dayOfStart}`);
             await createCalendarEvent(userId, {
                 summary: `Today: ZYVA appointment - ${itemSummary}`,
                 description: `This is a reminder for your appointment today at ${time}.\n\nLocation: ${location}\nAppointment ID: ${appointmentId}\n\nPlease arrive 15 minutes early.`,
-                startTime: dayOf.toISOString(),
-                endTime: dayOfEnd.toISOString(),
+                startTime: dayOfStart,
+                endTime: dayOfEndStr,
                 location: location
             });
         }

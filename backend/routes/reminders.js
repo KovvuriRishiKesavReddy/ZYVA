@@ -141,7 +141,8 @@ router.post('/', async (req, res) => {
 // @route   GET /api/reminders
 // @desc    Get all active reminders for a user
 // @access  Private (token checked in server.js)
-router.get('/', async (req, res) => {
+// Support both / and /user for frontend compatibility
+router.get(['/', '/user'], async (req, res) => {
     try {
         const userId = new mongoose.Types.ObjectId(req.user.id);
         const today = new Date();
@@ -195,7 +196,8 @@ router.get('/today', async (req, res) => {
 // @route   DELETE /api/reminders/:id
 // @desc    Delete a reminder
 // @access  Private (token checked in server.js)
-router.delete('/:id', async (req, res) => {
+// Support both /:id and /user/:id for frontend compatibility
+router.delete(['/:id', '/user/:id'], async (req, res) => {
     try {
         const reminder = await Reminder.findById(req.params.id);
 

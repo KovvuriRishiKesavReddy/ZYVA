@@ -2668,58 +2668,6 @@ process.on('SIGTERM', () => {
 
 // Removed duplicate Gmail transporter initialization (handled above)
 
-// REPLACE your existing sendConfirmationEmail function with this:
-async function sendConfirmationEmail(userId, subject, htmlBody) {
-    console.log('=== SENDING EMAIL ===');
-    console.log('User ID:', userId);
-    console.log('Subject:', subject);
-    console.log('Email service available:', !!emailTransporter);
-    try {
-        if (!db) {
-            console.error('DB not connected, cannot send email.');
-            return;
-        }
-
-        if (!emailTransporter) {
-            console.warn('Gmail service not configured, skipping email send.');
-            return;
-        }
-
-        const user = await db.collection(USERS_COLLECTION).findOne({ _id: new ObjectId(userId) });
-
-        if (!user || !user.email) {
-            console.info(`[Email] User ${userId} not found or missing email`);
-            return;
-        }
-
-        const mailOptions = {
-            from: {
-                name: 'ZYVA Healthcare',
-                address: process.env.COMPANY_EMAIL // zyvahealthcare@gmail.com
-            },
-            to: user.email,
-            subject: subject,
-            html: htmlBody,
-            replyTo: process.env.COMPANY_EMAIL
-        };
-
-        const result = await emailTransporter.sendMail(mailOptions);
-        console.log(`Email sent from ${process.env.COMPANY_EMAIL} to ${user.email}`);
-        console.log('Subject:', subject);
-        console.log('Message ID:', result.messageId);
-        
-    } catch (error) {
-        console.error(`Failed to send email for user ${userId}:`, error.message);
-        
-        // Common error messages and solutions
-        if (error.message.includes('Invalid login')) {
-            console.error('Solution: Make sure you are using an App Password, not your regular Gmail password');
-            console.error('Generate App Password at: https://myaccount.google.com/apppasswords');
-        }
-        
-        // Don't throw error to avoid breaking the main flow
-    }
-}
 setInterval(() => {
     const now = Date.now();
     let cleanedJWT = 0, cleanedUser = 0, cleanedAttempts = 0;

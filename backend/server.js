@@ -356,27 +356,16 @@ let emailTransporter = null;
 
 if (process.env.COMPANY_EMAIL && process.env.COMPANY_EMAIL_PASSWORD) {
     emailTransporter = nodemailer.createTransport({
-        service: 'gmail',
         host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // Use STARTTLS
+        port: 465,
+        secure: true,
         auth: {
             user: process.env.COMPANY_EMAIL,
-            pass: process.env.COMPANY_EMAIL_PASSWORD // App Password
+            pass: process.env.COMPANY_EMAIL_PASSWORD
         },
-        // Add these options for better Render compatibility
-        connectionTimeout: 30000, // 30 seconds
-        greetingTimeout: 30000,   // 30 seconds
-        socketTimeout: 30000,     // 30 seconds
-        pool: true,
-        maxConnections: 5,
-        maxMessages: 100,
-        rateLimit: 14, // 14 emails per second max
-        // TLS options for better compatibility
-        tls: {
-            rejectUnauthorized: false,
-            ciphers: 'SSLv3'
-        }
+        connectionTimeout: 30000,
+        greetingTimeout: 30000,
+        socketTimeout: 30000
     });
 
     // Test the connection with timeout
@@ -2596,28 +2585,7 @@ process.on('SIGTERM', () => {
 });
 
 
-if (process.env.COMPANY_EMAIL && process.env.COMPANY_EMAIL_PASSWORD) {
-    emailTransporter = nodemailer.createTransport({
-        service: 'gmail', // This automatically sets host and port for Gmail
-        auth: {
-            user: process.env.COMPANY_EMAIL,
-            pass: process.env.COMPANY_EMAIL_PASSWORD // This should be the app password
-        }
-    });
-
-    // Test the connection
-    emailTransporter.verify((error, success) => {
-        if (error) {
-            console.error('Gmail configuration error:', error);
-            console.error('Make sure you are using an App Password, not your regular Gmail password');
-            emailTransporter = null;
-        } else {
-            console.log('Gmail service ready for:', process.env.COMPANY_EMAIL);
-        }
-    });
-} else {
-    console.warn('Company email credentials missing in .env file');
-}
+// Removed duplicate Gmail transporter initialization (handled above)
 
 // REPLACE your existing sendConfirmationEmail function with this:
 async function sendConfirmationEmail(userId, subject, htmlBody) {

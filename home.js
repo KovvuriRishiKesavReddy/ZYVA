@@ -289,7 +289,7 @@
             if (!token) return;
 
             try {
-                const response = await fetch('http://localhost:3000/api/appointments/user', {
+                const response = await fetch('https://zyva-healthcare-utus.onrender.com/api/appointments/user', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) return;
@@ -336,7 +336,7 @@
             if (!container || !subtitle) return; // Exit if elements aren't there
 
             try {
-                const response = await fetch('http://localhost:3000/api/reminders/today', {
+                const response = await fetch('https://zyva-healthcare-utus.onrender.com/api/reminders/today', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -416,7 +416,7 @@ async function loadDashboardStats() {
 
     // Fetch appointment count (existing code)
     try {
-        const apptResponse = await fetch('http://localhost:3000/api/appointments/user', {
+        const apptResponse = await fetch('https://zyva-healthcare-utus.onrender.com/api/appointments/user', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (apptResponse.ok) {
@@ -447,7 +447,7 @@ async function loadDashboardStats() {
 
             // NEW: Fetch prescription count
             try {
-                const prescriptionResponse = await fetch('http://localhost:3000/api/prescriptions/user', {
+                const prescriptionResponse = await fetch('https://zyva-healthcare-utus.onrender.com/api/prescriptions/user', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -475,7 +475,7 @@ async function loadDashboardStats() {
             if (!token) return;
 
             try {
-                const response = await fetch('http://localhost:3000/api/reminders', {
+                const response = await fetch('https://zyva-healthcare-utus.onrender.com/api/reminders', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (response.ok) {

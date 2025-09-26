@@ -362,26 +362,36 @@ if (process.env.RESEND_API_KEY) {
 	console.log('✅ Resend email service configured');
 } else if (process.env.COMPANY_EMAIL && process.env.COMPANY_EMAIL_PASSWORD) {
     emailTransporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
+		host: 'smtp.gmail.com',
+		port: 587,
+		secure: false, // STARTTLS on 587
         auth: {
             user: process.env.COMPANY_EMAIL,
             pass: process.env.COMPANY_EMAIL_PASSWORD
         },
+		requireTLS: true,
+		pool: true,
+		maxConnections: 3,
+		maxMessages: 100,
         connectionTimeout: 30000,
         greetingTimeout: 30000,
         socketTimeout: 30000
     });
 
     // Test the connection with timeout
-    const testConnection = () => {
+	const testConnection = () => {
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 reject(new Error('Connection test timeout'));
             }, 15000); // 15 second timeout
 
-            emailTransporter.verify((error, success) => {
+			// Some transports may not support verify; simulate success if not present
+			if (typeof emailTransporter.verify !== 'function') {
+				clearTimeout(timeout);
+				return resolve(true);
+			}
+
+			emailTransporter.verify((error, success) => {
                 clearTimeout(timeout);
                 if (error) {
                     reject(error);

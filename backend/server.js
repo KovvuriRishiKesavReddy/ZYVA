@@ -12,7 +12,6 @@ const { ObjectId } = require('mongodb');
 const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
 const nodemailer = require('nodemailer');
-const postmark = require('postmark');
 const sgMail = require('@sendgrid/mail');
 
 const app = express();
@@ -29,13 +28,14 @@ const REMINDERS_COLLECTION = 'reminders';
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://zyva-healthcare-utus.onrender.com';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback';
-const GOOGLE_REGISTER_REDIRECT_URI = process.env.GOOGLE_REGISTER_REDIRECT_URI || 'http://localhost:3000/api/auth/google/register/callback';
+const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://zyva-healthcare-utus.onrender.com/api/auth/google/callback';
+const GOOGLE_REGISTER_REDIRECT_URI = process.env.GOOGLE_REGISTER_REDIRECT_URI || 'https://zyva-healthcare-utus.onrender.com/api/auth/google/register/callback';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 
 // Middleware
 // Middleware - Fixed CORS for Render
 const allowedOrigins = [
+    'https://zyva-healthcare-utus.onrender.com',
     'https://zyva-healthcare-utus.onrender.com',
     'http://localhost:3000',
     'http://localhost:3001'
@@ -353,18 +353,15 @@ const mongoOptions = {
     // Read preference for faster reads
     readPreference: 'primaryPreferred'
 };
-// Email sender setup priority: Postmark > SendGrid > Gmail SMTP
+// Email sender setup priority: SendGrid > Gmail SMTP
 let emailTransporter = null;
-let postmarkClient = null;
 let sendgridActive = false;
 
-if (process.env.POSTMARK_SERVER_TOKEN) {
-	postmarkClient = new postmark.ServerClient(process.env.POSTMARK_SERVER_TOKEN);
-	console.log('✅ Postmark email service configured');
-} else if (process.env.SENDGRID_API_KEY) {
+if (process.env.SENDGRID_API_KEY) {
 	sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 	sendgridActive = true;
 	console.log('✅ SendGrid email service configured');
+	console.log('✅ SendGrid is working (API key set).');
 } else if (process.env.COMPANY_EMAIL && process.env.COMPANY_EMAIL_PASSWORD) {
     emailTransporter = nodemailer.createTransport({
 		host: 'smtp.gmail.com',
@@ -435,14 +432,14 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
     console.log('=== SENDING EMAIL ===');
     console.log('User ID:', userId);
     console.log('Subject:', subject);
-    console.log('Email service available:', !!emailTransporter || !!postmarkClient || !!sendgridActive);
+    console.log('Email service available:', !!emailTransporter || !!sendgridActive);
     
     if (!db) {
         console.error('❌ DB not connected, cannot send email.');
         return { success: false, error: 'Database not connected' };
     }
 
-    if (!emailTransporter && !postmarkClient && !sendgridActive) {
+    if (!emailTransporter && !sendgridActive) {
         console.warn('⚠️  Email service not configured, skipping email send.');
         return { success: false, error: 'Email service not configured' };
     }
@@ -474,21 +471,7 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
             try {
                 console.log(`📧 Sending email attempt ${attempt + 1}/${maxAttempts} to ${user.email}`);
 
-                if (postmarkClient) {
-                    const fromAddress = process.env.POSTMARK_FROM || process.env.COMPANY_EMAIL || 'no-reply@example.com';
-                    const pmResult = await postmarkClient.sendEmail({
-                        From: fromAddress,
-                        To: user.email,
-                        Subject: subject,
-                        HtmlBody: htmlBody,
-                        ReplyTo: process.env.COMPANY_EMAIL || undefined,
-                        MessageStream: process.env.POSTMARK_STREAM || 'outbound'
-                    });
-                    console.log(`✅ Email sent successfully to ${user.email}`);
-                    console.log('📨 Subject:', subject);
-                    console.log('🆔 Message ID:', pmResult?.MessageID || pmResult?.MessageId || pmResult?.MessageID);
-                    return { success: true, messageId: pmResult?.MessageID || pmResult?.MessageId };
-                } else if (sendgridActive) {
+                if (sendgridActive) {
                     const fromAddress = process.env.SENDGRID_FROM || process.env.COMPANY_EMAIL || 'no-reply@example.com';
                     const msg = {
                         to: user.email,
@@ -540,7 +523,7 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
 }
 app.get('/api/email/health', authenticateToken, async (req, res) => {
     try {
-        if (!emailTransporter && !postmarkClient && !sendgridActive) {
+        if (!emailTransporter && !sendgridActive) {
             return res.json({
                 success: false,
                 emailConfigured: false,
@@ -568,8 +551,8 @@ app.get('/api/email/health', authenticateToken, async (req, res) => {
 		}
 
         res.json({
-            emailConfigured: !!emailTransporter || !!postmarkClient || !!sendgridActive,
-            using: postmarkClient ? 'postmark' : (sendgridActive ? 'sendgrid' : (emailTransporter ? 'gmail-smtp' : 'none')),
+            emailConfigured: !!emailTransporter || !!sendgridActive,
+            using: sendgridActive ? 'sendgrid' : (emailTransporter ? 'gmail-smtp' : 'none'),
             connectionTest: testResult,
             timestamp: new Date().toISOString()
         });

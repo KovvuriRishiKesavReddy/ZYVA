@@ -12,7 +12,7 @@ const { ObjectId } = require('mongodb');
 const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
 const nodemailer = require('nodemailer');
-const { createTransport: createResendTransport } = require('nodemailer-resend');
+const { Resend } = require('resend');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -352,13 +352,12 @@ const mongoOptions = {
     // Read preference for faster reads
     readPreference: 'primaryPreferred'
 };
-// Email transporter setup (Resend preferred, fallback to Gmail SMTP)
+// Email sender setup: use Resend HTTP API if available, else Gmail SMTP
 let emailTransporter = null;
+let resendClient = null;
 
 if (process.env.RESEND_API_KEY) {
-	emailTransporter = createResendTransport({
-		apiKey: process.env.RESEND_API_KEY
-	});
+	resendClient = new Resend(process.env.RESEND_API_KEY);
 	console.log('✅ Resend email service configured');
 } else if (process.env.COMPANY_EMAIL && process.env.COMPANY_EMAIL_PASSWORD) {
     emailTransporter = nodemailer.createTransport({
@@ -430,15 +429,15 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
     console.log('=== SENDING EMAIL ===');
     console.log('User ID:', userId);
     console.log('Subject:', subject);
-    console.log('Email service available:', !!emailTransporter);
+    console.log('Email service available:', !!emailTransporter || !!resendClient);
     
     if (!db) {
         console.error('❌ DB not connected, cannot send email.');
         return { success: false, error: 'Database not connected' };
     }
 
-    if (!emailTransporter) {
-        console.warn('⚠️  Gmail service not configured, skipping email send.');
+    if (!emailTransporter && !resendClient) {
+        console.warn('⚠️  Email service not configured, skipping email send.');
         return { success: false, error: 'Email service not configured' };
     }
 
@@ -468,27 +467,36 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
         while (attempt < maxAttempts) {
             try {
                 console.log(`📧 Sending email attempt ${attempt + 1}/${maxAttempts} to ${user.email}`);
-                
-                const result = await emailTransporter.sendMail(mailOptions);
-                
-                console.log(`✅ Email sent successfully to ${user.email}`);
-                console.log('📨 Subject:', subject);
-                console.log('🆔 Message ID:', result.messageId);
-                
-                return { success: true, messageId: result.messageId };
-                
+
+                if (resendClient) {
+                    const fromAddress = process.env.COMPANY_EMAIL || 'no-reply@resend.dev';
+                    const resendResult = await resendClient.emails.send({
+                        from: `ZYVA Healthcare <${fromAddress}>`,
+                        to: user.email,
+                        subject,
+                        html: htmlBody,
+                        reply_to: process.env.COMPANY_EMAIL || undefined
+                    });
+                    console.log(`✅ Email sent successfully to ${user.email}`);
+                    console.log('📨 Subject:', subject);
+                    console.log('🆔 Message ID:', resendResult?.data?.id || resendResult?.id);
+                    return { success: true, messageId: resendResult?.data?.id || resendResult?.id };
+                } else {
+                    const result = await emailTransporter.sendMail(mailOptions);
+                    console.log(`✅ Email sent successfully to ${user.email}`);
+                    console.log('📨 Subject:', subject);
+                    console.log('🆔 Message ID:', result.messageId);
+                    return { success: true, messageId: result.messageId };
+                }
+
             } catch (sendError) {
                 attempt++;
                 console.error(`❌ Email send attempt ${attempt} failed:`, sendError.message);
-                
-                // If it's a timeout and we have more attempts, wait and retry
-                if ((sendError.code === 'ETIMEDOUT' || sendError.message.includes('timeout')) && attempt < maxAttempts) {
+                if ((sendError.code === 'ETIMEDOUT' || (sendError.message || '').includes('timeout')) && attempt < maxAttempts) {
                     console.log(`⏳ Waiting 2 seconds before retry...`);
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     continue;
                 }
-                
-                // If it's the last attempt or a non-timeout error, throw
                 throw sendError;
             }
         }
@@ -510,7 +518,7 @@ async function sendConfirmationEmail(userId, subject, htmlBody) {
 }
 app.get('/api/email/health', authenticateToken, async (req, res) => {
     try {
-        if (!emailTransporter) {
+        if (!emailTransporter && !resendClient) {
             return res.json({
                 success: false,
                 emailConfigured: false,
@@ -519,8 +527,8 @@ app.get('/api/email/health', authenticateToken, async (req, res) => {
         }
 
 		// Quick connection test; some transports may not support verify()
-		let testResult = { success: true };
-		if (typeof emailTransporter.verify === 'function') {
+        let testResult = { success: true };
+        if (emailTransporter && typeof emailTransporter.verify === 'function') {
 			testResult = await new Promise((resolve) => {
 				const timeout = setTimeout(() => {
 					resolve({ success: false, error: 'Connection timeout' });
@@ -538,7 +546,8 @@ app.get('/api/email/health', authenticateToken, async (req, res) => {
 		}
 
         res.json({
-            emailConfigured: true,
+            emailConfigured: !!emailTransporter || !!resendClient,
+            using: resendClient ? 'resend' : (emailTransporter ? 'gmail-smtp' : 'none'),
             connectionTest: testResult,
             timestamp: new Date().toISOString()
         });

@@ -339,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
     modal.innerHTML = `
-      <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 transform transition-all">
+      <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-8 transform transition-all max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-2xl font-bold text-gray-800">Doctor Profile</h2>
           <button class="text-gray-500 hover:text-gray-700 close-modal">
@@ -365,22 +365,22 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
         
-        <div class="space-y-4 mb-6">
-          <div class="bg-gray-50 p-3 rounded-lg">
-            <p class="text-sm text-gray-600 mb-1">Experience</p>
-            <p class="font-semibold text-gray-800">${doctor.experience}</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-2 font-medium">Experience</p>
+            <p class="font-semibold text-gray-800 text-lg">${doctor.experience}</p>
           </div>
-          <div class="bg-gray-50 p-3 rounded-lg">
-            <p class="text-sm text-gray-600 mb-1">Consultation Fee</p>
-            <p class="font-bold text-green-600 text-lg">${doctor.fee}</p>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-2 font-medium">Consultation Fee</p>
+            <p class="font-bold text-green-600 text-xl">${doctor.fee}</p>
           </div>
-          <div class="bg-gray-50 p-3 rounded-lg">
-            <p class="text-sm text-gray-600 mb-1">Available</p>
-            <p class="text-sm text-gray-800">${doctor.availability}</p>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-2 font-medium">Availability</p>
+            <p class="text-sm text-gray-800 leading-relaxed">${doctor.availability}</p>
           </div>
-          <div class="bg-gray-50 p-3 rounded-lg">
-            <p class="text-sm text-gray-600 mb-1">Location</p>
-            <p class="text-sm text-gray-800">${doctor.location}</p>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-2 font-medium">Location</p>
+            <p class="text-sm text-gray-800 leading-relaxed">${doctor.location}</p>
           </div>
         </div>
         

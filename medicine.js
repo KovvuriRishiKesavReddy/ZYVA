@@ -532,6 +532,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ================== VIEW DETAILS ==================
+    medicineList.addEventListener('click', (e) => {
+        const btn = e.target.closest('.view-details-btn');
+        if (btn) {
+            const medicineId = parseInt(btn.dataset.id);
+            const med = medicines.find(m => m.id === medicineId);
+            if (med) {
+                showMedicineModal(med);
+            }
+        }
+    });
+
     // ================== UPDATE / REMOVE IN CART ==================
     cartItemsContainer.addEventListener('click', (e) => {
         const id = parseInt(e.target.dataset.id);
@@ -596,6 +608,92 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.classList.add('active');
         });
     });
+
+    // ================== MEDICINE MODAL ==================
+    function showMedicineModal(medicine) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 transform transition-all">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Medicine Details</h2>
+                    <button class="text-gray-500 hover:text-gray-700 close-modal">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">${medicine.name}</h3>
+                    <p class="text-blue-600 font-semibold">${medicine.description}</p>
+                    <div class="flex items-center justify-center mt-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${medicine.stock === 'In Stock' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${medicine.stock}</span>
+                    </div>
+                </div>
+                
+                <div class="space-y-4 mb-6">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Price</p>
+                        <p class="font-bold text-green-600 text-lg">₹${medicine.price.toFixed(2)}</p>
+                        <p class="text-sm text-gray-500 line-through">₹${medicine.originalPrice.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Details</p>
+                        <p class="text-sm text-gray-800">${medicine.details}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Delivery</p>
+                        <p class="text-sm text-gray-800">${medicine.delivery}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Category</p>
+                        <p class="text-sm text-gray-800 capitalize">${medicine.category}</p>
+                    </div>
+                </div>
+                
+                <button class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold add-from-modal" data-id="${medicine.id}">
+                    Add to Cart
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Add event listeners
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        modal.querySelector('.add-from-modal').addEventListener('click', () => {
+            const medicineId = parseInt(modal.querySelector('.add-from-modal').dataset.id);
+            const med = medicines.find(m => m.id === medicineId);
+            if (med) {
+                const existing = cartItems.find(item => item.id === medicineId);
+                if (existing) {
+                    existing.quantity++;
+                } else {
+                    cartItems.push({ ...med, quantity: 1 });
+                }
+                
+                saveCartToLocalStorage();
+                updateCartCount();
+                showPopup(`${med.name} added to cart!`);
+            }
+            modal.remove();
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
 
     // ================== POPUP NOTIFICATION ==================
     function showPopup(message) {

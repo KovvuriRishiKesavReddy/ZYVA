@@ -578,6 +578,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+    // ================== VIEW DETAILS ==================
+    scanList.addEventListener('click', (e) => {
+        const btn = e.target.closest('.view-details-btn');
+        if (btn) {
+            const scanId = parseInt(btn.dataset.id);
+            const scan = scans.find(s => s.id === scanId);
+            if (scan) {
+                showScanModal(scan);
+            }
+        }
+    });
+
     // ================== UPDATE / REMOVE IN CART ==================
     cartItemsContainer.addEventListener('click', (e) => {
     const id = parseInt(e.target.dataset.id);
@@ -681,6 +693,102 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.classList.add('active');
         });
     });
+
+    // ================== SCAN MODAL ==================
+    function showScanModal(scan) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 transform transition-all">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Scan Details</h2>
+                    <button class="text-gray-500 hover:text-gray-700 close-modal">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">${scan.name}</h3>
+                    <p class="text-blue-600 font-semibold">${scan.description}</p>
+                    <div class="flex items-center justify-center mt-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${scan.stock.includes('Available') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${scan.stock}</span>
+                    </div>
+                </div>
+                
+                <div class="space-y-4 mb-6">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Price</p>
+                        <p class="font-bold text-green-600 text-lg">₹${scan.price.toFixed(2)}</p>
+                        <p class="text-sm text-gray-500 line-through">₹${scan.originalPrice.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Procedure Details</p>
+                        <p class="text-sm text-gray-800">${scan.details}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Results Delivery</p>
+                        <p class="text-sm text-gray-800">${scan.delivery}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Category</p>
+                        <p class="text-sm text-gray-800 capitalize">${scan.category}</p>
+                    </div>
+                </div>
+                
+                <button class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold add-from-modal" data-id="${scan.id}" ${!scan.stock.includes('Available') ? 'disabled' : ''}>
+                    ${scan.stock.includes('Available') ? 'Book Now' : 'Not Available'}
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Add event listeners
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        modal.querySelector('.add-from-modal').addEventListener('click', () => {
+            const scanId = parseInt(modal.querySelector('.add-from-modal').dataset.id);
+            const scanData = scans.find(s => s.id === scanId);
+            if (scanData && scanData.stock.includes('Available')) {
+                const existing = cartItems.find(item => item.id === scanId);
+                if (existing) {
+                    existing.quantity++;
+                } else {
+                    cartItems.push({ 
+                        id: scanId,
+                        name: scanData.name,
+                        category: scanData.category,
+                        description: scanData.description,
+                        price: scanData.price,
+                        originalPrice: scanData.originalPrice,
+                        stock: scanData.stock,
+                        details: scanData.details,
+                        delivery: scanData.delivery,
+                        quantity: 1 
+                    });
+                }
+                
+                updateCartCount();
+                showPopup(`${scanData.name} added to cart!`);
+            }
+            modal.remove();
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
 
     // ================== POPUP NOTIFICATION ==================
     function showPopup(message) {

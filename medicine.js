@@ -496,7 +496,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ================== FILTER FUNCTION ==================
     document.querySelector('.filter-buttons').addEventListener('click', (e) => {
         if (e.target.tagName === 'BUTTON') {
-            filterButtons.forEach(btn => btn.classList.remove('bg-yellow-100'));
+            filterButtons.forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'active');
+                btn.classList.add('bg-white', 'bg-opacity-80', 'text-gray-700', 'hover:bg-blue-100');
+            });
             const categoryMap = {
                 'All Medicines': 'all',
                 'Prescription': 'prescription',
@@ -507,7 +510,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = categoryMap[e.target.textContent.trim()];
             const filtered = category === 'all' ? medicines : medicines.filter(med => med.category === category);
             renderMedicines(filtered);
-            e.target.classList.add('bg-yellow-100');
+            e.target.classList.add('bg-blue-600', 'text-white', 'active');
+            e.target.classList.remove('bg-white', 'bg-opacity-80', 'text-gray-700', 'hover:bg-blue-100');
         }
     });
 
@@ -733,7 +737,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set default filter to "All Medicines"
         const allMedicinesBtn = document.querySelector('.filter-buttons button');
         if (allMedicinesBtn) {
-            allMedicinesBtn.classList.add('bg-yellow-100');
+            allMedicinesBtn.classList.add('bg-blue-600', 'text-white', 'active');
+            allMedicinesBtn.classList.remove('bg-white', 'bg-opacity-80', 'text-gray-700', 'hover:bg-blue-100');
         }
     }
 

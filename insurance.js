@@ -242,6 +242,78 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPlans(filteredPlans);
     }
 
+    // ================== INSURANCE MODAL ==================
+    function showInsuranceModal(plan) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-8 transform transition-all max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Insurance Profile</h2>
+                    <button class="text-gray-500 hover:text-gray-700 close-modal">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">${plan.name}</h3>
+                    <p class="text-blue-600 font-semibold">${plan.provider}</p>
+                    <div class="flex items-center justify-center mt-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">${plan.type}</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Annual Premium</p>
+                        <p class="font-bold text-green-600 text-xl">₹${plan.premium.toLocaleString('en-IN')}</p>
+                        <p class="text-sm text-gray-500">${typeof plan.termYears === 'number' ? `for ${plan.termYears} year${plan.termYears > 1 ? 's' : ''}` : `(${plan.termYears})`}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Coverage Amount</p>
+                        <p class="font-bold text-gray-800 text-lg">₹${plan.coverage}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg md:col-span-2">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Key Features</p>
+                        <ul class="text-sm text-gray-800 leading-relaxed space-y-1">
+                            ${plan.features.map(feature => `<li class="flex items-start"><span class="text-blue-500 mr-2">•</span>${feature}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                
+                <button class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold add-from-modal" data-id="${plan.id}">
+                    Add to Cart
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Add event listeners
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        modal.querySelector('.add-from-modal').addEventListener('click', () => {
+            const planId = modal.querySelector('.add-from-modal').dataset.id;
+            addToCart(planId);
+            modal.remove();
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
     function showNotification(message, type = 'info') {
         const existing = document.querySelector('.notification');
         if (existing) existing.remove();
@@ -269,6 +341,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ================== VIEW DETAILS ==================
+    container.addEventListener('click', (e) => {
+        const btn = e.target.closest('.view-details-btn');
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const planId = btn.dataset.id;
+            const plan = insurancePlansData.find(p => p.id === planId);
+            if (plan) {
+                showInsuranceModal(plan);
+            }
+        }
+    });
+
     cartButton.addEventListener('click', () => cartModal.classList.remove('hidden'));
     closeCartBtn.addEventListener('click', () => cartModal.classList.add('hidden'));
     cartModal.addEventListener('click', e => {
@@ -287,8 +373,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
-            filterButtons.forEach(btn => btn.classList.remove('active', 'bg-yellow-100'));
-            button.classList.add('active', 'bg-yellow-100');
+            filterButtons.forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                btn.classList.add('bg-white', 'bg-opacity-80', 'text-gray-700', 'hover:bg-blue-100');
+            });
+            button.classList.add('active', 'bg-blue-600', 'text-white');
+            button.classList.remove('bg-white', 'bg-opacity-80', 'text-gray-700', 'hover:bg-blue-100');
             currentFilter = button.textContent;
             filterAndRenderPlans();
         });
@@ -299,4 +389,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Load
     filterAndRenderPlans();
     updateCartUI();
+    
+    // Set default filter to "All Plans"
+    const allPlansBtn = document.querySelector('.filter-buttons button');
+    if (allPlansBtn) {
+        allPlansBtn.classList.add('bg-blue-600', 'text-white', 'active');
+        allPlansBtn.classList.remove('bg-white', 'bg-opacity-80', 'text-gray-700', 'hover:bg-blue-100');
+    }
 });

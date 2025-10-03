@@ -505,7 +505,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ================== FILTER FUNCTION (Updates Category) ==================
     document.querySelector('.filter-buttons').addEventListener('click', (e) => {
         if (e.target.tagName === 'BUTTON') {
-            filterButtons.forEach(btn => btn.classList.remove('bg-yellow-100', 'active'));
+            filterButtons.forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'active');
+                btn.classList.add('bg-white', 'bg-opacity-80', 'text-gray-700', 'hover:bg-blue-100');
+            });
             const categoryMap = {
                 'All Scans': 'all',
                 'CT': 'ct',
@@ -529,7 +532,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     )
                 );
                 renderScans(filtered);
-                e.target.classList.add('bg-yellow-100', 'active');
+                e.target.classList.add('bg-blue-600', 'text-white', 'active');
+                e.target.classList.remove('bg-white', 'bg-opacity-80', 'text-gray-700', 'hover:bg-blue-100');
             }
         }
     });

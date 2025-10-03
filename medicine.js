@@ -444,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
                     <span class="text-xs text-gray-600">${med.delivery}</span>
-                    <button class="view-details-btn text-xs text-yellow-600 hover:text-yellow-800 font-medium">View Details</button>
+                    <button class="view-details-btn text-xs text-yellow-600 hover:text-yellow-800 font-medium" data-id="${med.id}">View Details</button>
                 </div>
             `;
             medicineList.appendChild(medicineCard);
@@ -536,6 +536,8 @@ document.addEventListener('DOMContentLoaded', () => {
     medicineList.addEventListener('click', (e) => {
         const btn = e.target.closest('.view-details-btn');
         if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
             const medicineId = parseInt(btn.dataset.id);
             const med = medicines.find(m => m.id === medicineId);
             if (med) {
@@ -614,9 +616,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.innerHTML = `
-            <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-8 transform transition-all max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-2xl font-bold text-gray-800">Medicine Details</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">Medicine Profile</h2>
                     <button class="text-gray-500 hover:text-gray-700 close-modal">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -637,23 +639,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 
-                <div class="space-y-4 mb-6">
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <p class="text-sm text-gray-600 mb-1">Price</p>
-                        <p class="font-bold text-green-600 text-lg">₹${medicine.price.toFixed(2)}</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Price</p>
+                        <p class="font-bold text-green-600 text-xl">₹${medicine.price.toFixed(2)}</p>
                         <p class="text-sm text-gray-500 line-through">₹${medicine.originalPrice.toFixed(2)}</p>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <p class="text-sm text-gray-600 mb-1">Details</p>
-                        <p class="text-sm text-gray-800">${medicine.details}</p>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <p class="text-sm text-gray-600 mb-1">Delivery</p>
-                        <p class="text-sm text-gray-800">${medicine.delivery}</p>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <p class="text-sm text-gray-600 mb-1">Category</p>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Category</p>
                         <p class="text-sm text-gray-800 capitalize">${medicine.category}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Details</p>
+                        <p class="text-sm text-gray-800 leading-relaxed">${medicine.details}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Delivery</p>
+                        <p class="text-sm text-gray-800 leading-relaxed">${medicine.delivery}</p>
                     </div>
                 </div>
                 

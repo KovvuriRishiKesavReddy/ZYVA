@@ -582,6 +582,8 @@ document.addEventListener('DOMContentLoaded', () => {
     scanList.addEventListener('click', (e) => {
         const btn = e.target.closest('.view-details-btn');
         if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
             const scanId = parseInt(btn.dataset.id);
             const scan = scans.find(s => s.id === scanId);
             if (scan) {
@@ -699,9 +701,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.innerHTML = `
-            <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-8 transform transition-all max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-2xl font-bold text-gray-800">Scan Details</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">Scan Profile</h2>
                     <button class="text-gray-500 hover:text-gray-700 close-modal">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -722,23 +724,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 
-                <div class="space-y-4 mb-6">
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <p class="text-sm text-gray-600 mb-1">Price</p>
-                        <p class="font-bold text-green-600 text-lg">₹${scan.price.toFixed(2)}</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Price</p>
+                        <p class="font-bold text-green-600 text-xl">₹${scan.price.toFixed(2)}</p>
                         <p class="text-sm text-gray-500 line-through">₹${scan.originalPrice.toFixed(2)}</p>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <p class="text-sm text-gray-600 mb-1">Procedure Details</p>
-                        <p class="text-sm text-gray-800">${scan.details}</p>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <p class="text-sm text-gray-600 mb-1">Results Delivery</p>
-                        <p class="text-sm text-gray-800">${scan.delivery}</p>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-lg">
-                        <p class="text-sm text-gray-600 mb-1">Category</p>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Category</p>
                         <p class="text-sm text-gray-800 capitalize">${scan.category}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Procedure Details</p>
+                        <p class="text-sm text-gray-800 leading-relaxed">${scan.details}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Results Delivery</p>
+                        <p class="text-sm text-gray-800 leading-relaxed">${scan.delivery}</p>
                     </div>
                 </div>
                 

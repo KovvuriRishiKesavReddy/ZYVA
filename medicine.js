@@ -403,6 +403,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateCartCount() {
         const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
         cartCountSpan.textContent = `${totalItems} Items`;
+        
+        // Update mobile cart count
+        const cartCountMobile = document.getElementById('cart-count-mobile');
+        if (cartCountMobile) {
+            cartCountMobile.textContent = totalItems;
+        }
     }
 
     // ================== RENDER MEDICINES ==================
@@ -742,6 +748,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ================== MOBILE MENU FUNCTIONALITY ==================
+    function initializeMobileMenu() {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        }
+    }
+
     // ================== INITIAL RENDER ==================
     initializePage();
+    initializeMobileMenu();
 });

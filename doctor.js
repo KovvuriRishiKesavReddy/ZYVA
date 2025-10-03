@@ -475,6 +475,28 @@ document.addEventListener('DOMContentLoaded', () => {
   window.clearSelectedDoctor = function() {
     localStorage.removeItem('selectedDoctor');
   };
+
+  // ================== MOBILE MENU FUNCTIONALITY ==================
+  function initializeMobileMenu() {
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (mobileMenuButton && mobileMenu) {
+      mobileMenuButton.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+      });
+      
+      // Close mobile menu when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+    }
+  }
+
+  // Initialize mobile menu
+  initializeMobileMenu();
 });
 
 // Export functions for use in other files if needed

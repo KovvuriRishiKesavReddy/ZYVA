@@ -370,16 +370,6 @@ function setupEventListeners() {
     
     // Save assessment
     document.getElementById('save-assessment').addEventListener('click', saveAssessment);
-    
-    // User menu toggle
-    const userMenuButton = document.getElementById('userMenuButton');
-    const userMenu = document.getElementById('userMenu');
-    
-    if (userMenuButton && userMenu) {
-        userMenuButton.addEventListener('click', function() {
-            userMenu.classList.toggle('hidden');
-        });
-    }
 }
 
 function toggleMode(mode) {
@@ -392,7 +382,7 @@ function toggleMode(mode) {
     const detailedNotification = document.getElementById('detailed-notification');
     
     if (mode === 'basic') {
-        basicBtn.className = 'px-8 py-3 rounded-lg text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md transform scale-105';
+        basicBtn.className = 'px-8 py-3 rounded-lg text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md transform scale-105';
         detailedBtn.className = 'px-8 py-3 rounded-lg text-sm font-semibold transition-all duration-300 text-gray-600 hover:text-gray-800 hover:bg-white/50';
         basicNotification.classList.remove('hidden');
         detailedNotification.classList.add('hidden');
@@ -402,7 +392,7 @@ function toggleMode(mode) {
         document.getElementById('medical-history-section').classList.add('hidden');
         document.getElementById('lifestyle-section').classList.add('hidden');
     } else {
-        detailedBtn.className = 'px-8 py-3 rounded-lg text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md transform scale-105';
+        detailedBtn.className = 'px-8 py-3 rounded-lg text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md transform scale-105';
         basicBtn.className = 'px-8 py-3 rounded-lg text-sm font-semibold transition-all duration-300 text-gray-600 hover:text-gray-800 hover:bg-white/50';
         detailedNotification.classList.remove('hidden');
         basicNotification.classList.add('hidden');
